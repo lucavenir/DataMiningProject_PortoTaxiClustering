@@ -9,6 +9,6 @@ public class Main {
     	//SparkConf sparkConf = new SparkConf(true).setAppName("Compute primes");
         //JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
-        System.out.println("Heello World");
+        System.out.println("Heello World!!");
     }
 }
