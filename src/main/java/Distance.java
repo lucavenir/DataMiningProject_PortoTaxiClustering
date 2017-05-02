@@ -15,13 +15,12 @@ public class Distance {
     
 	/**
 	    * Calculates the distance between two GPS points
-	    * @param latitude1 latitude of the first point.
-	    * @param longitude1 longitude of the first point.
-	    * @param latitude2 latitude of the second point.
-	    * @param longitude2 longitude of the second point.
-	    * @return distance between two points.
+	    * 
+	    * @param p1 first GPS point.
+	    * @param p2 second GPS point.
+	    * @return distance between the two points.
 	    */
-	    public static double distance(Position p1, Position p2){
+	    public static double distance(Position p1, Position p2) {
 	       
 	       double dLat;
 	       double dLong;

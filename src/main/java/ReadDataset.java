@@ -8,7 +8,7 @@ import org.apache.spark.sql.DataFrameReader;
 public class ReadDataset {
 	
 	/**
-	 * La migliore soluzione e più recente è usare i Dataset
+	 * La migliore soluzione e piÃ¹ recente Ã¨ usare i Dataset
 	 * Con i JavaRDD non si riescono a caricare i file csv
 	 * Sono necessarie le classi dataset e dataFrameReader (i suppose)
 	 * @param sc
@@ -20,6 +20,6 @@ public class ReadDataset {
 		//sbagliato clamorosamente
 		Dataset<Position> fileCSV = new DataFrameReader.csv(path);
 		
-		// A questo punto bisogna diltrare i dati
+		// A questo punto bisogna filtrare i dati
 	}
 }

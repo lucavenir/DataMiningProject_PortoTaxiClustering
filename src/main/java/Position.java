@@ -3,16 +3,11 @@ import org.apache.spark.sql.Encoders;
 
 import java.io.Serializable;
 
-/** 
- * 
- * 
- */
 
 public class Position implements Serializable {
 	
 	/*
-	 * Bisogna vedere se c'è un tipo di dati apposito per la coordinate GPS 
-	 *
+	 * Bisogna vedere se c'Ã¨ un tipo di dati apposito per la coordinate GPS 
 	 */
 	private long id;
 	private float pickup_longitude;
