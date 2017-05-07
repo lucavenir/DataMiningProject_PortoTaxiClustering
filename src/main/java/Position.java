@@ -6,14 +6,11 @@ import java.io.Serializable;
 
 public class Position implements Serializable {
 	
-	/*
-	 * Bisogna vedere se c'è un tipo di dati apposito per la coordinate GPS 
-	 */
 	private long id;
-	private float pickup_longitude;
-	private float pickup_latitude;
+	private double pickup_longitude;
+	private double pickup_latitude;
 	
-	public Position(long id, float pickup_longitude, float pickup_latitude) {
+	public Position(long id, double pickup_longitude, double pickup_latitude) {
 		this.id = id;
 		this.pickup_latitude = pickup_latitude;
 		this.pickup_longitude = pickup_longitude;
@@ -31,19 +28,19 @@ public class Position implements Serializable {
 		this.id = id;
 	}
 
-	public float getPickupLongitude() {
+	public double getPickupLongitude() {
 		return this.pickup_longitude;
 	}
 
-	public void setPickupLongitude(float pickup_longitude) {
+	public void setPickupLongitude(double pickup_longitude) {
 		this.pickup_longitude = pickup_longitude;
 	}
 
-	public float getPickupLatitude() {
+	public double getPickupLatitude() {
 		return this.pickup_latitude;
 	}
 
-	public void setPickupLatitude(float pickup_latitude) {
+	public void setPickupLatitude(double pickup_latitude) {
 		this.pickup_latitude = pickup_latitude;
 	}
 	
