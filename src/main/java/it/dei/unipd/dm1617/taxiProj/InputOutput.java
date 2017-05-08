@@ -33,14 +33,13 @@ public class InputOutput {
 	
 	public static JavaRDD<TaxiTrip> readOriginalDataset(SparkSession ss, String path) {
 	    
-	    Dataset<Row> ds =			ss.read().option("header",true)
-									.csv(path);
+	    Dataset<Row> ds = ss.read().option("header", true).csv(path);
 
 	  /*  Row r = ds.first();
 	    System.out.println(r);
-	    //insiste a non usare i nomi giusti delle colonne, quindi li impongo, e già che li impongo li impongo non in maiuscolo
+	    insiste a non usare i nomi giusti delle colonne, quindi li impongo, e già che li impongo li impongo non in maiuscolo
 	    ds = ds.toDF("tripId",	"callType",	"originCall",	"originStand",	"taxiId",	"timestamp","dayType",	"missingData",	"polyline");*/
-		JavaRDD<TaxiTrip> rdd =		ds.as(TaxiTrip.getEncoder()).javaRDD();
+		JavaRDD<TaxiTrip> rdd =	ds.as(TaxiTrip.getEncoder()).javaRDD();
 		
 	    
 	    return rdd;

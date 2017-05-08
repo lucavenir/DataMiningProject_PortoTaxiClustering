@@ -7,16 +7,28 @@ import java.io.Serializable;
 
 public class Position implements Serializable {
 	
-	private long id;
+	/**
+	 * Seriale generato automaticamente
+	 */
+	
+	private static final long serialVersionUID = 296189518930582668L;
+	private double id;
 	private double pickup_longitude;
 	private double pickup_latitude;
+	
 	/**
      * Raggio (medio) della Terra in metri.
      */
 	
     private static final int radius = 6378137;
 	
-	public Position(long id, double pickup_longitude, double pickup_latitude) {
+    public Position() {
+    	this.id = 0;
+    	this.pickup_latitude = 0;
+    	this.pickup_longitude = 0;
+    }
+    
+	public Position(double id, double pickup_longitude, double pickup_latitude) {
 		this.id = id;
 		this.pickup_latitude = pickup_latitude;
 		this.pickup_longitude = pickup_longitude;
@@ -26,11 +38,11 @@ public class Position implements Serializable {
 		return Encoders.bean(Position.class);
 	}
 	
-	public long getId() {
+	public double getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(double id) {
 		this.id = id;
 	}
 
