@@ -85,10 +85,7 @@ public class TaxiTrip implements Serializable {
 
 	public void setTripId(String id) {
 		this.tripId = id;
-	}
-	
-	
-	
+	}	
 	
 	public String getCallType() {
 		return callType;
@@ -97,10 +94,6 @@ public class TaxiTrip implements Serializable {
 	public void setCallType(String callType) {
 		this.callType = callType;
 	}
-	
-	
-	
-	
 	
 	public String getOriginCall() {
 		return originCall;

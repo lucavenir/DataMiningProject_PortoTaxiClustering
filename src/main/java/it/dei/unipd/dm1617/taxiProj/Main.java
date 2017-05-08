@@ -4,6 +4,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.function.Function;
 
 public class Main {
 	
@@ -25,6 +26,9 @@ public class Main {
     	SparkConf sparkConf = new SparkConf(true).setAppName("Data parser");
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
         
+        // Parallelizza il calcolo
+        int numPartitions = sc.defaultParallelism();
+        
         /*
          * Per utenti windows, scaricare il file winutils.exe da internet e metterlo nella cartella bin
          * Su linux pare non influire, qualunque cosa ci sia
@@ -37,14 +41,23 @@ public class Main {
         SparkSession ss = new SparkSession(sc.sc());
         JavaRDD<TaxiTrip> taxiTrips = InputOutput.readOriginalDataset(ss, "C:\\Users\\strin\\workspace\\NYC_TaxiDataMiningProject\\data\\data_sample.csv");//"C:\\Users\\strin\\workspace\\NYC_TaxiDataMiningProject\\data\\data_sample.csv");
         
-        // Chiude la sessione di Spark
-        ss.close();
+        // Filtra le corse di tipo C
+        JavaRDD<TaxiTrip> taxiTripsC = taxiTrips.filter((TaxiTrip) -> TaxiTrip.getCallType().contains("C"));
+        System.out.println(taxiTripsC.count());
+        
+        // Trasforma i dati
+        JavaRDD<Position> positions = taxiTripsC.map( -> 
+        		
+        		);
         
        /*
         * Scrive sul file json
         * 
         */
         //InputOutput.write(taxiTrips, "C:\\Users\\strin\\workspace\\NYC_TaxiDataMiningProject\\data\\data_sample2.json");
+        
+        // Chiude Spark
+        sc.close();
         
     }
 }
