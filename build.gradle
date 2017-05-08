@@ -11,7 +11,7 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
-mainClassName = 'Main'
+mainClassName = 'it.dei.unipd.dm1617.taxiProj.Main'
 
 
 applicationDefaultJvmArgs = ["-Dspark.master=local"]

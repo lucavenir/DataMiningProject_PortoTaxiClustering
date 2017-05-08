@@ -5,6 +5,12 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.api.java.JavaRDD;
 
+/**
+ * 
+ * La classe svolge le funzioni basiche di lettura del file csv
+ * @author Met
+ *
+ */
 
 public class InputOutput {
 	
@@ -25,8 +31,8 @@ public class InputOutput {
 		//return ds;
 	}*/
 	
-	public static JavaRDD<TaxiTrip> readOriginalDataset(JavaSparkContext sc, String path) {
-	    SparkSession ss = new SparkSession(sc.sc());
+	public static JavaRDD<TaxiTrip> readOriginalDataset(SparkSession ss, String path) {
+	    
 	    Dataset<Row> ds =			ss.read().option("header",true)
 									.csv(path);
 
@@ -36,19 +42,20 @@ public class InputOutput {
 	    ds = ds.toDF("tripId",	"callType",	"originCall",	"originStand",	"taxiId",	"timestamp","dayType",	"missingData",	"polyline");*/
 		JavaRDD<TaxiTrip> rdd =		ds.as(TaxiTrip.getEncoder()).javaRDD();
 		
-	    ss.close();
+	    
 	    return rdd;
 	    
 	}
 
-	/*
-	public static void write2(Dataset<Position2> ds, String path) {
-	    ds.write().csv(path);
-	}
-	*/
-	public static void write(JavaRDD<Position> rdd, String path) {
+	/**
+	 * Questo metodo serve a creare un file json a partire da un RDD
+	 * @param rdd RDD da convertire 
+	 * @param path destinazione dove salvare il file
+	 */
+	
+	public static void write(JavaRDD<TaxiTrip> rdd, String path) {
 	    new SparkSession(rdd.context())
-	      .createDataset(rdd.rdd(), Position.getEncoder())
+	      .createDataset(rdd.rdd(), TaxiTrip.getEncoder())
 	      .write()
 	      .option("compression", "bzip2")
 	      .json(path);

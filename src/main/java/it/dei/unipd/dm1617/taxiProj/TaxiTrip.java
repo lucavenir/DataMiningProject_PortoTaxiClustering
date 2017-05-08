@@ -7,17 +7,20 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 
+/**
+ * La classe rappresenta il tipo di dati di una singola riga
+ * 
+ * NEL DATASET LE COLONNE DEVONO AVERE GLI STESSI NOMI CHE I CAMPI DI QUESTA CLASSE, in modo tale da caricare automaticamente i dati
+ * 
+ * @author Met
+ * 
+ */
 
 public class TaxiTrip implements Serializable {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3624912097292787083L;
-	
-	//!!!! NEL DATASET LE COLONNE DEVONO AVERE GLI STESSI NOMI CHE I CAMPI DI QUESTA CLASSE
-	
-	private long tripId;
+		
+	private String tripId;
 	private String callType;
 	private String originCall;
 	private String originStand;
@@ -29,14 +32,14 @@ public class TaxiTrip implements Serializable {
 	
 	public TaxiTrip()
 	{
-		tripId=0;
-		callType="";
-		originCall="";
-		taxiId="";
-		timestamp="";
-		dayType="";
-		missingData="";
-		polyline="";
+		tripId = "";
+		callType = "";
+		originCall = "";
+		taxiId = "";
+		timestamp = "";
+		dayType = "";
+		missingData = "";
+		polyline = "";
 	}
 	/*
 	public TaxiTrip(long id,
@@ -76,11 +79,11 @@ public class TaxiTrip implements Serializable {
 		return Encoders.bean(TaxiTrip.class);
 	}
 	
-	public long getTripId() {
+	public String getTripId() {
 		return tripId;
 	}
 
-	public void setTripId(long id) {
+	public void setTripId(String id) {
 		this.tripId = id;
 	}
 	
