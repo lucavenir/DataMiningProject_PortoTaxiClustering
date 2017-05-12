@@ -10,8 +10,8 @@ public class Position implements Serializable {
 	/**
 	 * Seriale generato automaticamente
 	 */
-	
 	private static final long serialVersionUID = 296189518930582668L;
+	
 	private double id;
 	private double pickup_longitude;
 	private double pickup_latitude;

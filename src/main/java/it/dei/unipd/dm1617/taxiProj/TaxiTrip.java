@@ -30,8 +30,7 @@ public class TaxiTrip implements Serializable {
 	private String missingData;
 	private String polyline;
 	
-	public TaxiTrip()
-	{
+	public TaxiTrip() {
 		tripId = "";
 		callType = "";
 		originCall = "";

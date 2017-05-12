@@ -14,13 +14,19 @@ apply plugin: 'application'
 mainClassName = 'it.dei.unipd.dm1617.taxiProj.Main'
 
 
-applicationDefaultJvmArgs = ["-Dspark.master=local"]
+applicationDefaultJvmArgs = ["-Dspark.master=local[*]"]
 
 // In this section you declare where to find the dependencies of your project
 repositories {
     // Use 'jcenter' for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+}
+
+run {
+    if ( project.hasProperty("appArgs") ) {
+        args Eval.me(appArgs)
+    }
 }
 
 // In this section you declare the dependencies for your production and test code
