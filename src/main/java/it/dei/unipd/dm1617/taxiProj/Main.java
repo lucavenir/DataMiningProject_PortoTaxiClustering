@@ -38,6 +38,9 @@ public class Main {
     	  	-PappArgs="la vostra cartella del progetto con percorso assouluto"
     	  	Nel mio caso ho scritto:
     	  	-PappArgs="C:/Users/strin/workspace/NYC_TaxiDataMiningProject/"
+    	 * Attenzione agli slash (vanno usati gli "/" e NON gli "\");
+    	 * Attenzione agli spazi del vostro percorso assoluto(se ne avete, sostituiteli con "%20");
+    	 * Attenzione: mettere un "/" alla fine del percorso (come nell'esempio) altrimenti non funziona!
     	 * 
     	 * Per riferimento a dove mi sono informato:
     	 * http://stackoverflow.com/questions/11696521/how-to-pass-arguments-from-command-line-to-gradle
@@ -57,12 +60,20 @@ public class Main {
     	//final String dataset = "train.csv";
     	final String dataset = "data_sample.csv";
     	
-    	//Directory del progetto caricata tramite linea di comando
-    	final String projectPath = args[0];
+    	/**
+    	 * @author Venir
+    	 * 
+    	 * Filtro i "%20" e li sostituisce con uno spazio (per ovviare al problema degli spazi nel project path)
+    	 */
     	
+    	//Directory del progetto caricata tramite linea di comando
+    	String projectPath = args[0];
+    	//Sostituisco i "%20" con gli spazi
+    	projectPath = projectPath.replaceFirst("%20", " ");
+
     	// Struttura dati per il clustering
     	JavaRDD<Position> positions;
-    	    	
+
     	// Imposta spark
     	SparkConf sparkConf = new SparkConf(true)
     							.setMaster("local")
@@ -82,11 +93,12 @@ public class Main {
         SparkSession ss = new SparkSession(sc.sc());
         
         /*
-         * Per velocizzare la prima lettura del dataset viene salvato gi‡ filtrato in automatico nell cartella data
+         * Per velocizzare la prima lettura del dataset viene salvato gi√† filtrato in automatico nell cartella data
          * Nelle successive esecuzioni viene letto direttamente il dataset alleggerito
-         * Edit: in realt‡ ho scoperto dopo che spark Ë intelligente e teoricamente tiene i dati in memoria
-         * temporaneamente 
+         * Edit: in realt√† ho scoperto dopo che spark √® intelligente e teoricamente tiene i dati in memoria
+         * temporaneamente
          */
+        
         if (dataset.contains("train")) {
 	        Path dataPath = Paths.get(projectPath, "/data/trainFiltered");
 	        
@@ -99,13 +111,13 @@ public class Main {
 	        	// Salva per future esecuzioni
 	        	InputOutput.write(positions, projectPath + "/data/trainFiltered");
 	        }
-        } else { // Non Ë necessario per il sample che Ë molto veloce da caricare e pulire
+        } else { // Non √® necessario per il sample che √® molto veloce da caricare e pulire
         	positions = InputOutput.readOriginalDataset(ss, projectPath + "data/" + dataset);
         }
         
         
         /*
-         * A questo punto positions Ë il ns dataset su cui possiamo applicare l'algoritmo di clsutering
+         * A questo punto positions √® il ns dataset su cui possiamo applicare l'algoritmo di clsutering
          * Che si utilizzi il sample o il dataset completo basta riferirsi alla variabile positions
          */
         
@@ -113,6 +125,7 @@ public class Main {
          * Trasforma i dati in modo tale da essere passati a Kmeans
          * L'id viene eliminato
          */
+        
         JavaRDD<Vector> K_meansData = positions.map(
         		  new Function<Position, Vector>() {
         		    public Vector call(Position s) {
@@ -131,8 +144,8 @@ public class Main {
            planari e non considerano il fatto che la reale distanza dipenda anche dalla curva della terra.
          * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
          * Da wikipedia:
-           A medoid can be defined as the object of a cluster whose average dissimilarity to all the objects in the cluster is minimal. 
-           i.e. it is a most centrally located point in the cluster. 
+           A medoid can be defined as the object of a cluster whose average dissimilarity to all the objects in the cluster
+           is minimal. (i.e. it is a most centrally located point in the cluster)
          */
         
         int numIterations = 60;

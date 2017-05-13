@@ -4,6 +4,10 @@ import org.apache.spark.sql.Encoders;
 
 import java.io.Serializable;
 
+/**
+ * @author Venir
+ * @author Met
+*/
 
 public class Position implements Serializable {
 	
@@ -67,9 +71,6 @@ public class Position implements Serializable {
 	}
 	
 	/**
-	 * 
-	 * @author Venir
-	 * 
 	 * Date due posizione la classe restituisce la distanza
 	 * 
 	 * @param p1 prima coordinata GPS.
@@ -78,19 +79,19 @@ public class Position implements Serializable {
 	 */
 	
 	public static double distance(Position p1, Position p2) {
+		double dLat;
+		double dLong;
+		double a;
+		double c;
+	    double dist;
+	    
+	    dLat = Math.toRadians(p2.getPickupLatitude() - p1.getPickupLatitude());
+	    dLong = Math.toRadians(p2.getPickupLongitude()- p1.getPickupLongitude());
+	    a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(Math.toRadians(p1.getPickupLatitude())) * Math.cos(Math.toRadians(p2.getPickupLatitude())) * Math.sin(dLong/2) * Math.sin(dLong / 2);
+	    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+	    
+	    dist = radius * c;
 	       
-	       double dLat;
-	       double dLong;
-	       double a;
-	       double c;
-	       double dist;
-	       
-	       dLat = Math.toRadians(p2.getPickupLatitude() - p1.getPickupLatitude());
-	       dLong = Math.toRadians(p2.getPickupLongitude()- p1.getPickupLongitude());
-	       a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(Math.toRadians(p1.getPickupLatitude())) * Math.cos(Math.toRadians(p2.getPickupLatitude())) * Math.sin(dLong/2) * Math.sin(dLong / 2);
-	       c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-	       dist = radius * c;
-	       
-	       return dist;
-	   }
+	    return dist;
+	}
 }
