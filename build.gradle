@@ -13,7 +13,7 @@ apply plugin: 'application'
 
 mainClassName = 'it.dei.unipd.dm1617.taxiProj.Main'
 
-
+// L'asterisco indica di usare tutti i core del pc
 applicationDefaultJvmArgs = ["-Dspark.master=local[*]"]
 
 // In this section you declare where to find the dependencies of your project

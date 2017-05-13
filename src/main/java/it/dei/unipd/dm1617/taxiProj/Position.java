@@ -67,7 +67,7 @@ public class Position implements Serializable {
 	}
 	
 	/**
-	 * @author Met
+	 * 
 	 * @author Venir
 	 * 
 	 * Date due posizione la classe restituisce la distanza
