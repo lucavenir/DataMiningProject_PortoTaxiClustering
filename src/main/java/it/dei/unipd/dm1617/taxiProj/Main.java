@@ -2,9 +2,13 @@ package it.dei.unipd.dm1617.taxiProj;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.util.SizeEstimator;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
+
+// Import per il servizio Timestamp
+import java.sql.Timestamp;
 
 // Import per K means
 import org.apache.spark.mllib.clustering.KMeans;
@@ -28,7 +32,6 @@ import java.nio.file.Path;
 public class Main {
 	
     public static void main(String[] args) {
-    	
     	/*
     	 * Per configurare correttamente:
     	  1. Andare in gradle tasks -> application
@@ -57,8 +60,8 @@ public class Main {
     	 */
     	
     	// Commentare una delle due righe in base al dataset desiderato
-    	//final String dataset = "train.csv";
-    	final String dataset = "data_sample.csv";
+    	final String dataset = "train.csv";
+    	//final String dataset = "data_sample.csv";
     	
     	/**
     	 * @author Venir
@@ -112,7 +115,7 @@ public class Main {
 	        	InputOutput.write(positions, projectPath + "/data/trainFiltered");
 	        }
         } else { // Non è necessario per il sample che è molto veloce da caricare e pulire
-        	positions = InputOutput.readOriginalDataset(ss, projectPath + "data/" + dataset);
+        	positions = InputOutput.readOriginalDataset(ss, projectPath + "/data/" + dataset);
         }
         
         
@@ -151,16 +154,49 @@ public class Main {
         int numIterations = 60;
         int k = 63;
         
+        /*
+         * Inizializza il timer per misurare la performance di K Means
+         * System.currentTimeMillis() ritorna il # di ms da 1/1/1970
+         */
+        long init = System.currentTimeMillis();
         KMeansModel clusters = KMeans.train(K_meansData.rdd(), k, numIterations);
         
+        // Misuro lo spazio occupato dal clustering (in totale e in kB)
+        long space = SizeEstimator.estimate(clusters)/1024
+        		+ SizeEstimator.estimate(K_meansData)/1024
+        		+ SizeEstimator.estimate(positions)/1024;
+        ;
         /*
          * Da sottolineare che i centroidi non sono necessariamente punti del dataset
          */
         System.out.println("Cluster centers:");
+        /*
+         * Eseguo un'altra misurazione: "che ora è?"
+         * NOTA: Ceccarello ha scritto che è necessario effettuare un'azione prima di "stoppare" il timer
+         * Allora ho scelto di effettuare la misurazione dopo questo System.out.println
+         */
+        long end = System.currentTimeMillis();
+        
+        // Print dei centri
         for (Vector center: clusters.clusterCenters()) {
         	System.out.println(" " + center);
         }
         
+        /*
+         * Creo un'istanza di Timestamp da end-init: viene creata una data (che probabilmente sarà vicina al 1970);
+         * Serve per stampare minuti/secondi dell'esecuzione del clustering
+         */
+        Timestamp t = new Timestamp (end-init);
+        
+        /*
+         * Per qualche strano motivo (che non voglio indagare),
+         * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
+         * Allora tocca "passare" per la classe LocalDateTime che questi metodi li ha. 
+         */
+        System.out.println("K-means time: ");
+        System.out.println(t.toLocalDateTime().getMinute() + " minutes and " + t.toLocalDateTime().getSecond() + " seconds");
+        System.out.println("k=" + k);
+        System.out.println("K-means space: " + space + " kB");
         // E' solo un esempio. Non sara' la distanza che noi dobbiamo minimizzare.
         double WSSSE = clusters.computeCost(K_meansData.rdd());
         System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
