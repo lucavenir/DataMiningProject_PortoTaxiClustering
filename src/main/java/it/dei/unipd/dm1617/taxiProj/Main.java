@@ -64,6 +64,8 @@ public class Main {
     	//final String dataset = "data_sample.csv";
     	
     	/*
+    	 * @author Venir
+    	 * 
     	 * Filtro i "%20" e li sostituisce con uno spazio (per ovviare al problema degli spazi nel project path)
     	 */
     	
@@ -77,11 +79,11 @@ public class Main {
 
     	// Imposta spark
     	SparkConf sparkConf = new SparkConf(true)
-    							.setMaster("local")
     							.setAppName("Data parser and clustering");
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
         
-        // Parallelizza il calcolo
+
+       
         int numPartitions = sc.defaultParallelism();
         System.out.println("Numero di partizioni: " + numPartitions);
         
@@ -113,10 +115,9 @@ public class Main {
 	        	InputOutput.write(positions, projectPath + "/data/trainFiltered");
 	        }
         } else { // Non e' necessario per il sample che e' molto veloce da caricare e pulire
-        	positions = InputOutput.readOriginalDataset(ss, projectPath + "/data/" + dataset);
+        	positions = InputOutput.readOriginalDataset(ss, projectPath + "data/" + dataset);
         }
-        
-        
+        System.out.println("Prova: " + positions.partitions().size());
         /*
          * A questo punto positions è il ns dataset su cui possiamo applicare l'algoritmo di clsutering
          * Che si utilizzi il sample o il dataset completo basta riferirsi alla variabile positions
