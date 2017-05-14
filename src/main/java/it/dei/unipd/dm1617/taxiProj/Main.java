@@ -23,7 +23,7 @@ import java.nio.file.Path;
 
 /**
  * 
- * In questa classe lanciamo i vari tipi di clustering e mostriamo un confronto
+ * In questa classe vengono lanciati i vari tipi di clustering e mostrato un confronto
  * 
  * @version 1.0
  * @author Met
@@ -63,9 +63,7 @@ public class Main {
     	final String dataset = "train.csv";
     	//final String dataset = "data_sample.csv";
     	
-    	/**
-    	 * @author Venir
-    	 * 
+    	/*
     	 * Filtro i "%20" e li sostituisce con uno spazio (per ovviare al problema degli spazi nel project path)
     	 */
     	
@@ -85,7 +83,7 @@ public class Main {
         
         // Parallelizza il calcolo
         int numPartitions = sc.defaultParallelism();
-        System.out.println("Numero di core: " + numPartitions);
+        System.out.println("Numero di partizioni: " + numPartitions);
         
         /*
          * Per utenti windows, scaricare il file winutils.exe da internet e metterlo nella cartella bin
@@ -114,7 +112,7 @@ public class Main {
 	        	// Salva per future esecuzioni
 	        	InputOutput.write(positions, projectPath + "/data/trainFiltered");
 	        }
-        } else { // Non è necessario per il sample che è molto veloce da caricare e pulire
+        } else { // Non e' necessario per il sample che e' molto veloce da caricare e pulire
         	positions = InputOutput.readOriginalDataset(ss, projectPath + "/data/" + dataset);
         }
         
