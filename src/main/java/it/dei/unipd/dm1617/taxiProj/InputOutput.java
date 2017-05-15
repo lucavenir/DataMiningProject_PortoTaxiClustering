@@ -117,10 +117,9 @@ public class InputOutput {
 	 */
 	
 	public static void write(JavaRDD<Position> rdd, String path) {
-	    SparkSession ss = new SparkSession(rdd.context());
-	    ss.createDataset(rdd.rdd(), Position.getEncoder())
-	      .write()
-	      .json(path);
-	    ss.close();
+	    new SparkSession(rdd.context())
+	    	.createDataset(rdd.rdd(), Position.getEncoder())
+	    	.write()
+	    	.json(path);
 	  }
 }
