@@ -59,6 +59,7 @@ public class Main {
     	 * SENZA utilizzare excel, ma con un editor di testo
     	 */
     	
+    	
     	// Commentare una delle due righe in base al dataset desiderato
     	final String dataset = "train.csv";
     	//final String dataset = "data_sample.csv";
@@ -96,9 +97,9 @@ public class Main {
         SparkSession ss = new SparkSession(sc.sc());
         
         /*
-         * Per velocizzare la prima lettura del dataset viene salvato già filtrato in automatico nell cartella data
+         * Per velocizzare la prima lettura del dataset viene salvato gia'� filtrato in automatico nell cartella data
          * Nelle successive esecuzioni viene letto direttamente il dataset alleggerito
-         * Edit: in realtà ho scoperto dopo che spark è intelligente e teoricamente tiene i dati in memoria
+         * Edit: in realta'� ho scoperto dopo che spark e' intelligente e teoricamente tiene i dati in memoria
          * temporaneamente
          */
         
@@ -117,9 +118,10 @@ public class Main {
         } else { // Non e' necessario per il sample che e' molto veloce da caricare e pulire
         	positions = InputOutput.readOriginalDataset(ss, projectPath + "data/" + dataset);
         }
-        System.out.println("Prova: " + positions.partitions().size());
+        //System.out.println("Prova: " + positions.partitions().size());
+        System.out.println("Numero righe prima clustering: " +  positions.count());
         /*
-         * A questo punto positions è il ns dataset su cui possiamo applicare l'algoritmo di clsutering
+         * A questo punto positions e' il ns dataset su cui possiamo applicare l'algoritmo di clsutering
          * Che si utilizzi il sample o il dataset completo basta riferirsi alla variabile positions
          */
         
@@ -141,8 +143,8 @@ public class Main {
         
         /*
          * Crea un clustering k means
-         * Da ricordare che K-means sfrutta la distanza euclidea L2 e non avrebbe senso usare un'altra metrica,
-           per la proprieta' dei centroidi di minimizzare i quadrati. Quindi i punti vengono considerati come
+         * Da ricordare che K-means sfrutta la distanza euclidea L2 e non avrebbe senso usare un'altra metrica.
+           Quindi i punti vengono considerati come
            planari e non considerano il fatto che la reale distanza dipenda anche dalla curva della terra.
          * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
          * Da wikipedia:
@@ -170,14 +172,15 @@ public class Main {
          */
         System.out.println("Cluster centers:");
         /*
-         * Eseguo un'altra misurazione: "che ora è?"
-         * NOTA: Ceccarello ha scritto che è necessario effettuare un'azione prima di "stoppare" il timer
+         * Eseguo un'altra misurazione: "che ora e'"
+         * NOTA: Ceccarello ha scritto che e' necessario effettuare un'azione prima di "stoppare" il timer
          * Allora ho scelto di effettuare la misurazione dopo questo System.out.println
          */
         long end = System.currentTimeMillis();
         
         // Print dei centri
         for (Vector center: clusters.clusterCenters()) {
+        	
         	System.out.println(" " + center);
         }
         

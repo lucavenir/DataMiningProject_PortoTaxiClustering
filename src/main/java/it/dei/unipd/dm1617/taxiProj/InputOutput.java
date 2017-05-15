@@ -1,8 +1,5 @@
 package it.dei.unipd.dm1617.taxiProj;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
 import java.util.Scanner;
@@ -42,7 +39,6 @@ public class InputOutput {
          * Ho scelto quindi di filtrare in modo molto semplice vedendo se polyline ha una lunghezza minima
          */
         JavaRDD<TaxiTrip> taxiTripsFiltered = taxiTripsC.filter((t) -> (t.getPolyline().length() > 5));
-        
 
         /*
          * Trasforma i dati, mappando ogni chiave-valore di tipo TaxiTrip in un chaive-valore di tipo Position
@@ -75,12 +71,27 @@ public class InputOutput {
 				// Salva i valori nell'oggetto
 				a.setPickupLatitude(Double.parseDouble(latitude));
 				a.setPickupLongitude(Double.parseDouble(longitude));
-				
+
 				return a;
 			}
         });
-        
-	    return pos;
+
+        /*
+         * Filtraggio di posizioni anomale. 
+        */
+        JavaRDD<Position> posCorrected = pos.filter(
+        		new Function<Position, Boolean>() {
+        			public Boolean call(Position t) {
+        				double minLat = 41;
+        				double maxLat = 42;
+        				double minLong = -8.7;
+        				double maxLong = -8.4;
+        				if(t.getPickupLatitude() > minLat && t.getPickupLatitude() < maxLat && t.getPickupLongitude() > minLong && t.getPickupLongitude() < maxLong)
+        					return true;
+        				return false;
+        			}
+				});
+        return posCorrected;
 	}
 	
 	/**
