@@ -1,8 +1,11 @@
-package it.dei.unipd.dm1617.taxiProj;
+	package it.dei.unipd.dm1617.taxiProj;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.SizeEstimator;
+
+import scala.Tuple2;
+
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function;
@@ -97,9 +100,9 @@ public class Main {
         SparkSession ss = new SparkSession(sc.sc());
         
         /*
-         * Per velocizzare la prima lettura del dataset viene salvato gia'� filtrato in automatico nell cartella data
+         * Per velocizzare la prima lettura del dataset viene salvato gia'� filtrato in automatico nell cartella data
          * Nelle successive esecuzioni viene letto direttamente il dataset alleggerito
-         * Edit: in realta'� ho scoperto dopo che spark e' intelligente e teoricamente tiene i dati in memoria
+         * Edit: in realta'� ho scoperto dopo che spark e' intelligente e teoricamente tiene i dati in memoria
          * temporaneamente
          */
         
@@ -160,42 +163,38 @@ public class Main {
          * System.currentTimeMillis() ritorna il # di ms da 1/1/1970
          */
         long init = System.currentTimeMillis();
+        // Ricorda: i centroidi non sono necessariamente punti del dataset
         KMeansModel clusters = KMeans.train(K_meansData.rdd(), k, numIterations);
         
         // Misuro lo spazio occupato dal clustering (in totale e in kB)
         long space = SizeEstimator.estimate(clusters)/1024
         		+ SizeEstimator.estimate(K_meansData)/1024
-        		+ SizeEstimator.estimate(positions)/1024;
-        ;
-        /*
-         * Da sottolineare che i centroidi non sono necessariamente punti del dataset
-         */
-        System.out.println("Cluster centers:");
-        /*
-         * Eseguo un'altra misurazione: "che ora e'"
-         * NOTA: Ceccarello ha scritto che e' necessario effettuare un'azione prima di "stoppare" il timer
-         * Allora ho scelto di effettuare la misurazione dopo questo System.out.println
-         */
-        long end = System.currentTimeMillis();
+        		+ SizeEstimator.estimate(positions)/1024; // Sia chiaro: questo è solo un esempio di funzionamento
         
-        // Print dei centri
-        for (Vector center: clusters.clusterCenters()) {
-        	
-        	System.out.println(" " + center);
-        }
-        
+        // KMeans ha svolto il suo lavoro, Stop al cronometro!
+        long end = System.currentTimeMillis(); // Faremo la stessa cosa con KMedian
+
         /*
-         * Creo un'istanza di Timestamp da end-init: viene creata una data (che probabilmente sarà vicina al 1970);
+         * Creo un'istanza di Timestamp da end-init: viene creata una data-ora (che sarà vicina a 00:00 del 1/1/1970);
          * Serve per stampare minuti/secondi dell'esecuzione del clustering
          */
         Timestamp t = new Timestamp (end-init);
+        
+        // Calcolo dei punti a massima distanza dal centro del loro cluster + Print dei centri
+        Tuple2<Position[],Double[]> maxdist = Utils.calcolaMaxDistanze(clusters, positions);
+        
+        // Stampa dei risultati sopra ottenuti
+        for (int i=0; i<k; i++) {
+        	System.out.println("Cluster #" + (i+1) + ", con centro: " + clusters.clusterCenters()[i]);
+        	System.out.println("Punto a massima distanza: " + maxdist._1()[i] + " (d: " + maxdist._2()[i] + ")");
+        }
         
         /*
          * Per qualche strano motivo (che non voglio indagare),
          * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
          * Allora tocca "passare" per la classe LocalDateTime che questi metodi li ha. 
          */
-        System.out.println("K-means time: ");
+        System.out.print("K-means time: ");
         System.out.println(t.toLocalDateTime().getMinute() + " minutes and " + t.toLocalDateTime().getSecond() + " seconds");
         System.out.println("k=" + k);
         System.out.println("K-means space: " + space + " kB");
@@ -206,7 +205,7 @@ public class Main {
         
         // Chiudi Spark
         ss.close();
-        sc.close();
+        sc.close(); // Perché due volte?
         
         
     }

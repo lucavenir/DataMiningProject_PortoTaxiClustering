@@ -38,6 +38,12 @@ public class Position implements Serializable {
 		this.pickup_longitude = pickup_longitude;
 	}
 	
+	public Position(double pickup_longitude, double pickup_latitude) {
+		this.id = 0;
+		this.pickup_latitude = pickup_latitude;
+		this.pickup_longitude = pickup_longitude;
+	}
+	
 	public static Encoder<Position> getEncoder() {
 		return Encoders.bean(Position.class);
 	}
@@ -67,7 +73,7 @@ public class Position implements Serializable {
 	}
 	
 	public String toString() {
-		return "Posizine: " + id + " Latitude: " + pickup_latitude + " Longitude: " + pickup_longitude; 
+		return "[" + pickup_latitude + "," + pickup_longitude + "]"; 
 	}
 	
 	/**
@@ -78,20 +84,23 @@ public class Position implements Serializable {
 	 * @return distanza tra i due punti.
 	 */
 	
-	public static double distance(Position p1, Position p2) {
-		double dLat;
-		double dLong;
-		double a;
-		double c;
-	    double dist;
-	    
-	    dLat = Math.toRadians(p2.getPickupLatitude() - p1.getPickupLatitude());
-	    dLong = Math.toRadians(p2.getPickupLongitude()- p1.getPickupLongitude());
-	    a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(Math.toRadians(p1.getPickupLatitude())) * Math.cos(Math.toRadians(p2.getPickupLatitude())) * Math.sin(dLong/2) * Math.sin(dLong / 2);
-	    c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-	    
-	    dist = radius * c;
-	       
-	    return dist;
+public static double distance(Position p1, Position p2) {
+	double dLat;
+	double dLong;
+	double a;
+	double c;
+	double dist;
+	
+	// Per evitare inutili imprecisioni con p1==p2
+	if (p1.getPickupLatitude()==p2.getPickupLatitude() && p1.getPickupLongitude()==p2.getPickupLongitude())
+		return 0;
+	
+	dLat = Math.toRadians(p2.getPickupLatitude() - p1.getPickupLatitude());
+	dLong = Math.toRadians(p2.getPickupLongitude() - p1.getPickupLongitude());
+	a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(Math.toRadians(p1.getPickupLatitude())) * Math.cos(Math.toRadians(p2.getPickupLatitude())) * Math.sin(dLong/2) * Math.sin(dLong / 2);
+	c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+	dist = radius * c;
+	   
+	return dist;
 	}
 }
