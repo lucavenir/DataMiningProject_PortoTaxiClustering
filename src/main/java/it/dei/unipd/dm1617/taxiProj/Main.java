@@ -24,6 +24,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 
+//logger
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+
 /**
  * 
  * In questa classe vengono lanciati i vari tipi di clustering e mostrato un confronto
@@ -62,10 +66,11 @@ public class Main {
     	 * SENZA utilizzare excel, ma con un editor di testo
     	 */
     	
+
     	
     	// Commentare una delle due righe in base al dataset desiderato
-    	final String dataset = "train.csv";
-    	//final String dataset = "data_sample.csv";
+    	//final String dataset = "train.csv";
+    	final String dataset = "data_sample.csv";
     	
     	/*
     	 * @author Venir

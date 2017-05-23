@@ -27,6 +27,10 @@ run {
     if ( project.hasProperty("appArgs") ) {
         args Eval.me(appArgs)
     }
+    else
+    {
+    	args "./"
+    }
 }
 
 // In this section you declare the dependencies for your production and test code

@@ -2,3 +2,8 @@
 /.gradle/
 /bin/
 /build/
+/data/train.csv
+/data/trainFiltered/
+~*
+# questo non so bene cosa sia, si può eliminare?
+/src/main/java/Position2.java
