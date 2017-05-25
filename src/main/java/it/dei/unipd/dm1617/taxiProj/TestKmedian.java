@@ -164,23 +164,4 @@ public class TestKmedian {
         }
     }
 
-    public static void drawMap(ArrayList<Position> l, String name) {
-        BufferedImage off_Image = new BufferedImage(DIMENSION, DIMENSION, BufferedImage.TYPE_INT_ARGB);
-        Graphics g = off_Image.getGraphics();
-        g.setColor(Color.white);
-        g.fillRect(0, 0, DIMENSION, DIMENSION);
-        g.setColor(Color.black);
-
-        System.out.println("L SIZE for" + name + ".png :" + l.size());
-
-        for (int i = 0; i < l.size(); i++) {
-            Position p = l.get(i);
-            g.drawRect((int) p.x, (int) p.y, 0, 0);
-        }
-        try {
-            ImageIO.write(off_Image, "png", new File(name + ".png"));
-        } catch (IOException ex) {
-            System.out.println("noimage");
-        }
-    }
 }
