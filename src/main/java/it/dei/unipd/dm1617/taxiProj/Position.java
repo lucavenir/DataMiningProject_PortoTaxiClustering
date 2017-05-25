@@ -84,23 +84,23 @@ public class Position implements Serializable {
 	 * @return distanza tra i due punti.
 	 */	
 	public static double distance(Position p1, Position p2) {
-	double dLat;
-	double dLong;
-	double a;
-	double c;
-	double dist;
+		double dLat;
+		double dLong;
+		double a;
+		double c;
+		double dist;
 	
-	// Per evitare inutili imprecisioni con p1==p2
-	if (p1.getPickupLatitude()==p2.getPickupLatitude() && p1.getPickupLongitude()==p2.getPickupLongitude())
-		return 0;
+		// Per evitare inutili imprecisioni con p1==p2
+		if (p1.getPickupLatitude()==p2.getPickupLatitude() && p1.getPickupLongitude()==p2.getPickupLongitude())
+			return 0;
 	
-	dLat = Math.toRadians(p2.getPickupLatitude() - p1.getPickupLatitude());
-	dLong = Math.toRadians(p2.getPickupLongitude() - p1.getPickupLongitude());
-	a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(Math.toRadians(p1.getPickupLatitude())) * Math.cos(Math.toRadians(p2.getPickupLatitude())) * Math.sin(dLong/2) * Math.sin(dLong / 2);
-	c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-	dist = radius * c;
+		dLat = Math.toRadians(p2.getPickupLatitude() - p1.getPickupLatitude());
+		dLong = Math.toRadians(p2.getPickupLongitude() - p1.getPickupLongitude());
+		a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(Math.toRadians(p1.getPickupLatitude())) * Math.cos(Math.toRadians(p2.getPickupLatitude())) * Math.sin(dLong/2) * Math.sin(dLong / 2);
+		c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		dist = radius * c;
 	   
-	return dist;
+		return dist;
 	}
 
 	/**
@@ -111,9 +111,6 @@ public class Position implements Serializable {
 	 * @return true se le coordinate GPS sono uguali, false altrimenti.
 	 */	
 	public static boolean compare(Position p1, Position p2) {
-	if (p1.getPickupLatitude()==p2.getPickupLatitude() && p1.getPickupLongitude()==p2.getPickupLongitude())
-		return true;
-	else 
-		return false;
+		return (p1.getPickupLatitude()==p2.getPickupLatitude() && p1.getPickupLongitude()==p2.getPickupLongitude());
 	}
 }
