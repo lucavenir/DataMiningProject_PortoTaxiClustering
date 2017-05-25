@@ -109,7 +109,7 @@ public class Kmedian_PAM {
             }
 
             if (!iter.hasNext()) {
-                //errore, nella partizione non sono disponibili k interi
+                //errore, nella partizione non sono disponibili k Position distinti
                 throw new RuntimeException("Bad sampling made PAM algorithm impossible for same partition.");
             }
         }
