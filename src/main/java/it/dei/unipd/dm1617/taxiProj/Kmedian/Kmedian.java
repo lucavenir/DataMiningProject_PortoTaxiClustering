@@ -269,7 +269,7 @@ public class Kmedian {
      * @param l n# di reducer voluti
      * @return Array di k centri
      */
-    private Position[] getPAMCenters(JavaPairRDD<Integer, Position> dDataset, int k, int l) {
+    private Position[] getPAMCenters(JavaPairRDD<Integer, Position> dDataset, int k,final int l) {
         //determino con PAM i medoidi candidati
         Position[][] medoids = Kmedian_PAM.parallelPAM(dDataset, k, l);
 
@@ -287,7 +287,8 @@ public class Kmedian {
      *
      * @param centers centri dei clusters, Array di l elementi, uno per ogni
      * reducer contenente k centri
-     * @return Lista contenente il dataset partizionato
+     * @return Lista contenente il dataset partizionato, nel primo elemento di ciascuna tupla l'indice della partizione 
+     * (pari all'indice del centro nell array inserito) nel secondo la posizione.
      */
     public List<Tuple2<Integer, Position>> partition(Position[] centers) {
         return dataset.mapToPair((point) -> {
@@ -310,7 +311,7 @@ public class Kmedian {
      *
      * @param centers centri dei clusters su cui calcolare la funzione
      * obbiettivo
-     * @return la funzione obbiettivo
+     * @return La funzione obbiettivo
      */
     public double objectiveFunction(Position[] centers) {
         JavaPairRDD<Integer, Double> dpartition = dataset.mapToPair((point) -> {
@@ -339,7 +340,7 @@ public class Kmedian {
      * @param centers centri dei clusters su cui calcolare la funzione
      * obbiettivo
      * @param l numero workers
-     * @return la funzione obbiettivo
+     * @return La funzione obbiettivo
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
         JavaRDD<Double[]> dpartition = dataset.map((point) -> {
