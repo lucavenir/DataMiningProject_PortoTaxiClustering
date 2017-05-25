@@ -41,6 +41,13 @@ public class Kmedian {
     }
 
     /**
+     * @return dataset memorizzato nella struttura dati
+     */
+    public JavaRDD<Position> getDataset() {
+        return dataset;
+    }
+    
+    /**
      * @return dimensione del dataset
      */
     public long getSize() {
@@ -139,11 +146,13 @@ public class Kmedian {
         final int l = 5;
         int sample_size = (40 + 2 * k);
 
+        // recupero dal dataset lo SparkContext (viene usato solo per questo metodo, inutile memorizzarlo come variabile della classe)
         JavaSparkContext sc = new JavaSparkContext(dataset.context());
+        // prenso una sample di esattamente l*sample_size elementi
         List<Position> t = dataset.takeSample(false, sample_size * l);
+        
+        //parallellizzo la sample dividendo gli elementi equamente tra i reducer
         ArrayList<Tuple2<Integer, Position>> toSample = new ArrayList();
-
-        //parallellizzo la sample
         for (int i = 0; i < t.size(); i++) {
             toSample.add(new Tuple2((i % l), t.get(i)));
         }
