@@ -35,7 +35,7 @@ public class Kmedian_CLARANS {
         for (int i = 0; i < dataset.size(); i++) {
             boolean no_copy = true;
             for (int i2 = (i + 1); i2 < dataset.size(); i2++) {
-                if (Position.compareTo(dataset.get(i), dataset.get(i2))) {
+                if (Position.compare(dataset.get(i), dataset.get(i2))) {
                     no_copy = false;
                 }
             }
@@ -68,7 +68,7 @@ public class Kmedian_CLARANS {
             boolean candidate_accept = true;
 
             for (int i = 0; i < indexK; i++) {
-                if (Position.compareTo(candidate, medoids[indexLocal][i])) {
+                if (Position.compare(candidate, medoids[indexLocal][i])) {
                     candidate_accept = false;
                 }
             }
@@ -121,13 +121,13 @@ public class Kmedian_CLARANS {
                 boolean candidate_accept = true;
 
                 for (int i = 0; i < k && candidate_accept; i++) {
-                    if (Position.compareTo(candidate, medoids[indexLocal][i])) {
+                    if (Position.compare(candidate, medoids[indexLocal][i])) {
                         candidate_accept = false;
                     }
                 }
 
                 for (int i = 0; i < indexK && candidate_accept; i++) {
-                    if (Position.compareTo(candidate, neighbor[indexLocal][i])) {
+                    if (Position.compare(candidate, neighbor[indexLocal][i])) {
                         candidate_accept = false;
                     }
                 }

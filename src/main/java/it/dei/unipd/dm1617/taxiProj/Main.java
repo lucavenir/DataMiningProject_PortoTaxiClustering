@@ -1,5 +1,6 @@
-	package it.dei.unipd.dm1617.taxiProj;
+package it.dei.unipd.dm1617.taxiProj;
 
+import  it.dei.unipd.dm1617.taxiProj.Kmedian.*;
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.SizeEstimator;
@@ -231,7 +232,11 @@ public class Main {
         double WSSSE = clusters.computeCost(K_meansData.rdd());
         System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
         
+        Kmedian a = new Kmedian(positions);
+        int l = (int) positions.count() / 5;
         
+        Position[] centers = a.getPAMCenters(5, l);
+        System.out.println(a.objectiveFunction(centers));
         // Chiudi Spark
         ss.close();
         sc.close(); // Perché due volte?
