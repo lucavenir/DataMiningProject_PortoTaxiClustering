@@ -42,7 +42,7 @@ public class Kmedian_PAM {
                 Position p = iter.next();
                 boolean equal = false;
                 for (int i = 0; i < medoids.length && !equal; i++) {
-                    if (Position.compareTo(p, medoids[i])) {
+                    if (Position.compare(p, medoids[i])) {
                         equal = true;
                     }
                 }
@@ -98,7 +98,7 @@ public class Kmedian_PAM {
             boolean candidate_accept = true;
 
             for (int i = 0; i < indexK; i++) {
-                if (Position.compareTo(candidate, medoids[i])) {
+                if (Position.compare(candidate, medoids[i])) {
                     candidate_accept = false;
                 }
             }
