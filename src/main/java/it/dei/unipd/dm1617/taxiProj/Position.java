@@ -113,4 +113,23 @@ public class Position implements Serializable {
 	public static boolean compare(Position p1, Position p2) {
 		return (p1.getPickupLatitude()==p2.getPickupLatitude() && p1.getPickupLongitude()==p2.getPickupLongitude());
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+        	if ((o == null) || !(o instanceof Position)) {
+			return false;
+		} else {
+			return Position.compare(this, (Position) o);
+		}
+	}
+	
+	//pare che spark utilizzi hashCode per il metodo .distinct()
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 79 * hash + (int) (Double.doubleToLongBits(this.id) ^ (Double.doubleToLongBits(this.id) >>> 32));
+		hash = 79 * hash + (int) (Double.doubleToLongBits(this.pickup_longitude) ^ (Double.doubleToLongBits(this.pickup_longitude) >>> 32));
+		hash = 79 * hash + (int) (Double.doubleToLongBits(this.pickup_latitude) ^ (Double.doubleToLongBits(this.pickup_latitude) >>> 32));
+		return hash;
+	}
 }
