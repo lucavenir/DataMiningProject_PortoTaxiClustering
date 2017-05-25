@@ -10,23 +10,33 @@ public class Kmedian_CLARANS {
     //mancano ancora commenti e un po di pulizia del codice
     //classe che esegue i CLARANS iterativi
 
+	/**
+	 * Esegue CLARANS in parallelo per ogni reducer
+	 * 
+	 * @param dataset dataset dei dati già partizionato tra più reducer
+	 * @param k n# cluster voluti
+	 * @param l n# reducer voluti
+	 * @param nlocal n# di ricerche locali di CLARANS
+	 * @return Un array di k centri per ogni reducer
+	 */
     public static Position[][] parallelCLARANS(JavaPairRDD<Integer, Position> dataset, final int k, int l, final int nlocal) {
         long nd = dataset.distinct().count();
 
         int avgPartitionSize = (int) nd / l;                                                 //mi baso sulla dimensione media delle partizioni per evitare il calcolo delle dimensioni di ciascuna partizione per il numero di neighbor
-        int maxNeighbor = (k * (avgPartitionSize - k)) / 100;                                //il numero di neighbor visitati è pari all'1% di quelli che visiterebbe PAM
-        int minMaxNeighbor = (8 * avgPartitionSize) / 100;                                   //impongo che il numero maxNeighbor sia almeno l'8% della partizione (per k troppo piccolo ha senso controllare un po più nieghbor)
-        final int nneighbor = (maxNeighbor < minMaxNeighbor) ? minMaxNeighbor : maxNeighbor; //potrebbe generare errore se c'è una partizione troppo piccola
+        int maxNeighbor = (k * (avgPartitionSize - k)) / 100;                                //il numero di neighbor visitati ﾃｨ pari all'1% di quelli che visiterebbe PAM
+        int minMaxNeighbor = (8 * avgPartitionSize) / 100;                                   //impongo che il numero maxNeighbor sia almeno l'8% della partizione (per k troppo piccolo ha senso controllare un po piﾃｹ nieghbor)
+        final int nneighbor = (maxNeighbor < minMaxNeighbor) ? minMaxNeighbor : maxNeighbor; //potrebbe generare errore se c'ﾃｨ una partizione troppo piccola
 
+        //ragruppa ogni partizione ed esegue per ciascuna di esse clarans in modo iterativo
         List<Tuple2<Integer, Position[]>> p = dataset.groupByKey().mapToPair((partition) -> {
             return new Tuple2(partition._1(), iter_clarans(partition._2(), k, nlocal, nneighbor));
         }).collect();
 
+        //conversione ArrayList in array e ritorno
         Position[][] toReturn = new Position[l][k];
         p.forEach((tuple) -> {
             toReturn[tuple._1()] = tuple._2();
         });
-
         return toReturn;
     }
 
@@ -277,7 +287,7 @@ public class Kmedian_CLARANS {
                 //confronto con neighbor
                 for (int y = 0; y < nneighbor; y++) {
                     double distance = Position.distance(p, neighbor[x][y]);
-                    if (neighborIndex[x][y] == best) { // è quello sostituito
+                    if (neighborIndex[x][y] == best) { // ﾃｨ quello sostituito
                         //sostituisci best
                         distance = (distance < second_min) ? distance : second_min;
                     } else {
