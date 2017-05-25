@@ -58,11 +58,11 @@ public class TestKmedian {
         Kmedian km = new Kmedian(sc, l);
 
         // stop being this lazy Spark
-        Position1[] voids = km.getPAMCenters(K, 10);
+        Position[] voids = km.getPAMCenters(K, 10);
         //
 
         long timeIniPAM = System.currentTimeMillis();
-        Position1[] medoidFinalPAM = km.getPAMCenters(K);
+        Position[] medoidFinalPAM = km.getPAMCenters(K);
         long timeENDPAM = System.currentTimeMillis();
         double d = km.objectiveFunction(medoidFinalPAM);
         long timeobjFunct= System.currentTimeMillis();
@@ -70,15 +70,15 @@ public class TestKmedian {
         System.out.println("time obj: "+(timeobjFunct-timeENDPAM));
 
         long timeIni = System.currentTimeMillis();
-        Position1[] medoidFinal = km.getCLARACenters(K);
+        Position[] medoidFinal = km.getCLARACenters(K);
         long timeEND = System.currentTimeMillis();
 
         long timeIniFAST = System.currentTimeMillis();
-        Position1[] medoidFinalFAST = km.getCLARAFASTCenters(K);
+        Position[] medoidFinalFAST = km.getCLARAFASTCenters(K);
         long timeENDFAST = System.currentTimeMillis();
 
         long timeIniCLARANS = System.currentTimeMillis();
-        Position1[] medoidFinalCLARANS = km.getCLARANSCenters(K);
+        Position[] medoidFinalCLARANS = km.getCLARANSCenters(K);
         long timeENDCLARANS = System.currentTimeMillis();
 
         time += (timeEND - timeIni);
