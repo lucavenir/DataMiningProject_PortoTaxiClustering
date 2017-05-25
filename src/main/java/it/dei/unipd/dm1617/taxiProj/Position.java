@@ -82,9 +82,8 @@ public class Position implements Serializable {
 	 * @param p1 prima coordinata GPS.
 	 * @param p2 seconda coordinata GPS.
 	 * @return distanza tra i due punti.
-	 */
-	
-public static double distance(Position p1, Position p2) {
+	 */	
+	public static double distance(Position p1, Position p2) {
 	double dLat;
 	double dLong;
 	double a;
@@ -102,5 +101,19 @@ public static double distance(Position p1, Position p2) {
 	dist = radius * c;
 	   
 	return dist;
+	}
+
+	/**
+	 * Confronta due punti
+	 * 
+	 * @param p1 prima coordinata GPS.
+	 * @param p2 seconda coordinata GPS.
+	 * @return true se le coordinate GPS sono uguali, false altrimenti.
+	 */	
+	public static boolean compare(Position p1, Position p2) {
+	if (p1.getPickupLatitude()==p2.getPickupLatitude() && p1.getPickupLongitude()==p2.getPickupLongitude())
+		return true;
+	else 
+		return false;
 	}
 }
