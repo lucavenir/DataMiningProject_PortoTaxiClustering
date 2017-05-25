@@ -76,6 +76,7 @@ public class Kmedian {
      */
     public Position[] getCLARACenters(int k) {
         final int l = (int) (Math.sqrt(n));
+        // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
         }).cache();
@@ -97,8 +98,10 @@ public class Kmedian {
      */
     public Position[] getCLARACenters(int k, final int l) {
         if (l >= lmax || l < 0) {
+            //ignoro l se troppo grande
             return getCLARACenters(k);
         } else {
+            // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
             JavaPairRDD<Integer, Position> dDataset = dataset.sample(false, l / Math.sqrt(n)).mapToPair((point) -> {
                 return new Tuple2((int) (Math.random() * l), point);
             }).cache();
@@ -148,7 +151,7 @@ public class Kmedian {
 
         // recupero dal dataset lo SparkContext (viene usato solo per questo metodo, inutile memorizzarlo come variabile della classe)
         JavaSparkContext sc = new JavaSparkContext(dataset.context());
-        // prenso una sample di esattamente l*sample_size elementi
+        // prendo una sample di esattamente l*sample_size elementi
         List<Position> t = dataset.takeSample(false, sample_size * l);
         
         //parallellizzo la sample dividendo gli elementi equamente tra i reducer
@@ -200,6 +203,7 @@ public class Kmedian {
         if (l > lmax || l < 0) {
             return getCLARANSCenters(k);
         }
+        // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.sample(false, l / Math.sqrt(n)).mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
         }).cache();
@@ -222,6 +226,7 @@ public class Kmedian {
         //determino con PAM i medoidi candidati
         Position[][] medoids = Kmedian_CLARANS.parallelCLARANS(dDataset, k, l, nlocal);
 
+        //ragruppo il risultato
         ArrayList<Position> punti = new ArrayList();
         for (Position[] medoid : medoids) {
             punti.addAll(Arrays.asList(medoid));
@@ -246,6 +251,7 @@ public class Kmedian {
         if (l > lmax || l < 0) {
             return getPAMCenters(k);
         } else {
+            // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
             JavaPairRDD<Integer, Position> dDataset = dataset.sample(false, l / Math.sqrt(n)).mapToPair((point) -> {
                 return new Tuple2((int) (Math.random() * l), point);
             }).cache();
@@ -254,7 +260,7 @@ public class Kmedian {
     }
 
     /**
-     * Calcola i centri per un k-clustering su un dataset già partizionato dai
+     * Calcola i centri per un k-clustering su un dataset giﾃ� partizionato dai
      * metodi pubblici distribuendo il compito tra l reducer.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centro riesegue
      * PAM tra i risultati di ogni singolo reducer.
@@ -264,6 +270,7 @@ public class Kmedian {
      */
     public Position[] getPAMCenters(int k) {
         int l = lmax;
+        // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
         }).cache();
@@ -301,7 +308,7 @@ public class Kmedian {
      */
     public List<Tuple2<Integer, Position>> partition(Position[] centers) {
         return dataset.mapToPair((point) -> {
-            //controlla la distanza di un punto con ogni centro e assegnalo al migliore
+            //controllo la distanza di un punto con ogni centro e assegno al migliore
             double min = Position.distance(point, centers[0]);
             int best = 0;
             for (int i = 1; i < centers.length; i++) {
@@ -324,7 +331,7 @@ public class Kmedian {
      */
     public double objectiveFunction(Position[] centers) {
         JavaPairRDD<Integer, Double> dpartition = dataset.mapToPair((point) -> {
-            //controlla la distanza di un punto con ogni centro e assegnalo al migliore
+            //controllo la distanza di un punto con ogni centro e assegno al migliore
             double min = Position.distance(point, centers[0]);
             int best = 0;
             for (int i = 1; i < centers.length; i++) {
@@ -353,7 +360,7 @@ public class Kmedian {
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
         JavaRDD<Double[]> dpartition = dataset.map((point) -> {
-            //controlla la distanza di un punto con ogni centro e assegnalo al migliore
+            //controllo la distanza di un punto con ogni centro e assegno al migliore
             Double phiPoint[] = new Double[l];
             for (int ireducer = 0; ireducer < l; ireducer++) {
                 double min = Position.distance(point, centers[ireducer][0]);
