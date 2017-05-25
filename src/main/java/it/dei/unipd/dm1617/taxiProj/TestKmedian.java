@@ -141,8 +141,8 @@ public class TestKmedian {
         int convergence = (int) (Math.random() * centers.length);
         double rand = Math.sqrt(Math.sqrt(Math.sqrt(Math.sqrt(Math.random()))));
         //System.out.println("rand: "+rand);
-        int offset_x = (int) ((centers[convergence].x - x) * (rand));
-        int offset_y = (int) ((centers[convergence].y - y) * (rand));
+        int offset_x = (int) ((centers[convergence].getPickupLongitude() - x) * (rand));
+        int offset_y = (int) ((centers[convergence].getPickupLatitude() - y) * (rand));
 
         return new Position(x + offset_x, y + offset_y);
     }
