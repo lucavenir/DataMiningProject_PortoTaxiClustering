@@ -11,7 +11,7 @@ public class Kmedian_PAM {
     //classe che esegue i PAM iterativi
     
     public static Position[][] parallelPAM(JavaPairRDD<Integer, Position> dataset, final int k, int l) {
-        List<Tuple2<Integer, Position[]>> p = dataset.groupByKey().mapToPair((partition) -> {
+		List<Tuple2<Integer, Position[]>> p = dataset.groupByKey().mapToPair((partition) -> {
             return new Tuple2(partition._1(), iter_pam(partition._2(), k));
         }).collect();
 

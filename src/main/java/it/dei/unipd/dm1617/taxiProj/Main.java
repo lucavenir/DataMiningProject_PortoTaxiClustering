@@ -22,6 +22,8 @@ import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -76,8 +78,8 @@ public class Main {
 
     	
     	// Commentare una delle due righe in base al dataset desiderato
-    	//final String dataset = "train.csv";
-    	final String dataset = "data_sample.csv";
+    	final String dataset = "train.csv";
+    	//final String dataset = "data_sample.csv";
     	
     	/*
     	 * @author Venir
@@ -138,17 +140,24 @@ public class Main {
       
         
         
-        long t0draw = System.nanoTime();
+       
+    	long t0draw = System.nanoTime();
         System.out.println("drawing positions...");
-        BufferedImage img = VisualizationsProvider.draw(positions, 2000, 1000, 41.2, -8.7, 41.1, -8.5);
-        try {
-            File outputfile = new File("data/img.png");
-            ImageIO.write(img, "png", outputfile);
-        } catch (IOException e) {
+		ClusteringDrawing cd = new ClusteringDrawing(2000,2000).
+				setLimits(41.35, -8.7, 41.05, -8.4).
+				setAlfa(0.8).
+				draw(positions, null, null);
+        try
+        {
+            cd.save("data/completeDataset.png");
+        }
+        catch (IOException e)
+        {
             throw new RuntimeException("error saving img");
         }
         long t1draw = System.nanoTime();
         System.out.println("done ("+((t1draw-t0draw)/1000000)+"ms)");
+        
         
         
         //System.out.println("Prova: " + positions.partitions().size());
@@ -167,8 +176,8 @@ public class Main {
         		  new Function<Position, Vector>() {
         		    public Vector call(Position s) {
         		      double[] values = new double[2];
-        		      values[0] = s.getPickupLatitude();
-        		      values[1] = s.getPickupLongitude();
+        		      values[0] = s.getPickupLongitude();
+        		      values[1] = s.getPickupLatitude();
         		      return Vectors.dense(values);
         		    }
         		  }
@@ -192,6 +201,7 @@ public class Main {
          * Inizializza il timer per misurare la performance di K Means
          * System.currentTimeMillis() ritorna il # di ms da 1/1/1970
          */
+        System.out.println("KMeans training...");
         long init = System.currentTimeMillis();
         // Ricorda: i centroidi non sono necessariamente punti del dataset
         KMeansModel clusters = KMeans.train(K_meansData.rdd(), k, numIterations);
@@ -203,7 +213,30 @@ public class Main {
         
         // KMeans ha svolto il suo lavoro, Stop al cronometro!
         long end = System.currentTimeMillis(); // Faremo la stessa cosa con KMedian
+        System.out.println("done.");
 
+        
+        t0draw = System.nanoTime();
+        System.out.println("drawing positions...");
+		ClusteringDrawing cdkm = new ClusteringDrawing(2000,2000).
+				setAlfa(0.6).
+				setLimits(41.35, -8.7, 41.05, -8.4).
+				draw(positions, clusters, null).
+				drawCenters(1, 1, 1, 1, clusters.clusterCenters(), 10);
+        try
+        {
+            cdkm.save("data/kmeans.png");
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("error saving img");
+        }
+        t1draw = System.nanoTime();
+        System.out.println("done ("+((t1draw-t0draw)/1000000)+"ms)");
+        
+        
+        if(false)
+        {        
         /*
          * Creo un'istanza di Timestamp da end-init: viene creata una data-ora (che sarà vicina a 00:00 del 1/1/1970);
          * Serve per stampare minuti/secondi dell'esecuzione del clustering
@@ -232,14 +265,21 @@ public class Main {
         double WSSSE = clusters.computeCost(K_meansData.rdd());
         System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
         
-        Kmedian a = new Kmedian(positions);
-        int l = (int) positions.count() / 5;
+        }
         
-        Position[] centers = a.getPAMCenters(5, l);
+        
+        
+        
+        
+        
+        Kmedian a = new Kmedian(positions);
+        int l = 4;
+        
+        Position[] centers = a.getPAMCenters(63, l);
         System.out.println(a.objectiveFunction(centers));
         // Chiudi Spark
         ss.close();
-        sc.close(); // Perché due volte?
+        sc.close();
         
         
     }
