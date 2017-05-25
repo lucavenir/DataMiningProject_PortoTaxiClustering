@@ -6,9 +6,8 @@ import java.util.List;
 import org.apache.spark.api.java.JavaPairRDD;
 import scala.Tuple2;
 
+//classe che esegue i CLARANS iterativi
 public class Kmedian_CLARANS {
-    //mancano ancora commenti e un po di pulizia del codice
-    //classe che esegue i CLARANS iterativi
 
 	/**
 	 * Esegue CLARANS in parallelo per ogni reducer
