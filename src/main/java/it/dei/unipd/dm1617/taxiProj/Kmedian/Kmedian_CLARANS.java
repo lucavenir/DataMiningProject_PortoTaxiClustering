@@ -13,8 +13,8 @@ public class Kmedian_CLARANS {
     public static Position[][] parallelCLARANS(JavaPairRDD<Integer, Position> dataset, final int k, int l, final int nlocal) {
         long nd = dataset.distinct().count();
 
-        int avgPartitionSize = (int) nd / l;                                                //mi baso sulla dimensione media delle partizioni per evitare il calcolo delle dimensioni di ciascuna partizione per il numero di neighbor
-        int maxNeighbor = (k * (avgPartitionSize - k)) / 100;
+        int avgPartitionSize = (int) nd / l;                                                 //mi baso sulla dimensione media delle partizioni per evitare il calcolo delle dimensioni di ciascuna partizione per il numero di neighbor
+        int maxNeighbor = (k * (avgPartitionSize - k)) / 100;                                //il numero di neighbor visitati è pari all'1% di quelli che visiterebbe PAM
         int minMaxNeighbor = (8 * avgPartitionSize) / 100;                                   //impongo che il numero maxNeighbor sia almeno l'8% della partizione (per k troppo piccolo ha senso controllare un po più nieghbor)
         final int nneighbor = (maxNeighbor < minMaxNeighbor) ? minMaxNeighbor : maxNeighbor; //potrebbe generare errore se c'è una partizione troppo piccola
 
