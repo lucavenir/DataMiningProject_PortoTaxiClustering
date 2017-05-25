@@ -21,7 +21,7 @@ public class TestKmedian {
         JavaSparkContext sc = new JavaSparkContext(conf);
         sc.setLogLevel("ERROR");
 
-        Position1[] centers = new Position1[K];
+        Position[] centers = new Position[K];
         centers[0] = new Position(5, 15);
         centers[1] = new Position(90, 1);
         centers[2] = new Position(1, 69);
@@ -34,7 +34,7 @@ public class TestKmedian {
         System.out.println("Beginner Medoids: ");
         soutCenters(centers);
 
-        ArrayList<Position1> l = new ArrayList();
+        ArrayList<Position> l = new ArrayList();
         for (int i = 0; i < 100000; i++) {
             Position p;
             if (i > 1000) {
@@ -135,7 +135,7 @@ public class TestKmedian {
         return new Position((int) (Math.random() * DIMENSION), (int) (Math.random() * DIMENSION));
     }
 
-    public static Position1 generateRandomWithCentersPoint(Position[] centers) {
+    public static Position generateRandomWithCentersPoint(Position[] centers) {
         int x = (int) (Math.random() * DIMENSION);
         int y = (int) (Math.random() * DIMENSION);
         int convergence = (int) (Math.random() * centers.length);
@@ -144,13 +144,13 @@ public class TestKmedian {
         int offset_x = (int) ((centers[convergence].x - x) * (rand));
         int offset_y = (int) ((centers[convergence].y - y) * (rand));
 
-        return new Position1(x + offset_x, y + offset_y);
+        return new Position(x + offset_x, y + offset_y);
     }
 
-    public static double getMinDistance(Position center, Position1[] computeed) {
+    public static double getMinDistance(Position center, Position[] computeed) {
         double min = Double.MAX_VALUE;
         for (Position p : computeed) {
-            double temp = Position1.distance(p, center);
+            double temp = Position.distance(p, center);
             if (temp < min) {
                 min = temp;
             }
