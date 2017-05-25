@@ -1,6 +1,6 @@
 package it.dei.unipd.dm1617.taxiProj;
 
-import it.dei.unipd.dm1617.taxiProj.Position;
+import it.dei.unipd.dm1617.taxiProj.Kmedian.*;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
