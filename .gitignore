@@ -3,6 +3,7 @@
 /bin/
 /build/
 /data/train.csv
+/data/img.png
 /data/trainFiltered/
 ~*
 .~*

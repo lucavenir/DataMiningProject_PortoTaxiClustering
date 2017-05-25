@@ -13,12 +13,18 @@ import org.apache.spark.api.java.function.Function;
 // Import per il servizio Timestamp
 import java.sql.Timestamp;
 
+import javax.imageio.ImageIO;
+
 // Import per K means
 import org.apache.spark.mllib.clustering.KMeans;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 // Serve per verificare se il dataset iniziale e' stato gia' filtrato
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -111,6 +117,7 @@ public class Main {
          * temporaneamente
          */
         
+        System.out.println("loading dataset...");
         if (dataset.contains("train")) {
 	        Path dataPath = Paths.get(projectPath, "/data/trainFiltered");
 	        
@@ -126,6 +133,23 @@ public class Main {
         } else { // Non e' necessario per il sample che e' molto veloce da caricare e pulire
         	positions = InputOutput.readOriginalDataset(ss, projectPath + "data/" + dataset);
         }
+        System.out.println("loaded");
+      
+        
+        
+        long t0draw = System.nanoTime();
+        System.out.println("drawing positions...");
+        BufferedImage img = VisualizationsProvider.draw(positions, 2000, 1000, 41.2, -8.7, 41.1, -8.5);
+        try {
+            File outputfile = new File("data/img.png");
+            ImageIO.write(img, "png", outputfile);
+        } catch (IOException e) {
+            throw new RuntimeException("error saving img");
+        }
+        long t1draw = System.nanoTime();
+        System.out.println("done ("+((t1draw-t0draw)/1000000)+"ms)");
+        
+        
         //System.out.println("Prova: " + positions.partitions().size());
         System.out.println("Numero righe prima clustering: " +  positions.count());
         /*
