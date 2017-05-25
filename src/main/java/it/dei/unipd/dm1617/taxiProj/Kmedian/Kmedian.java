@@ -88,7 +88,7 @@ public class Kmedian {
      * altrimenti il valore viene ignorato
      * @return Array di k centri
      */
-    public Position[] getCLARACenters(int k, int l) {
+    public Position[] getCLARACenters(int k, final int l) {
         if (l >= lmax || l < 0) {
             return getCLARACenters(k);
         } else {
@@ -184,7 +184,7 @@ public class Kmedian {
      * [2,5] valori diversi vengono settati a 3.
      * @return Array di k centri
      */
-    public Position[] getCLARANSCenters(int k, int l, int nlocal) {
+    public Position[] getCLARANSCenters(int k, final int l, int nlocal) {
         if (nlocal < 2 || nlocal > 5) {
             nlocal = 3;
         }
@@ -340,7 +340,7 @@ public class Kmedian {
      * @param centers centri dei clusters su cui calcolare la funzione
      * obbiettivo
      * @param l numero workers
-     * @return La funzione obbiettivo
+     * @return La funzione obbiettivo di ciascun reducer
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
         JavaRDD<Double[]> dpartition = dataset.map((point) -> {
