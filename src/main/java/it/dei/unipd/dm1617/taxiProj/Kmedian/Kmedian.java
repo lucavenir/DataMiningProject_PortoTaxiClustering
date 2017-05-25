@@ -260,7 +260,7 @@ public class Kmedian {
     }
 
     /**
-     * Calcola i centri per un k-clustering su un dataset già partizionato dai
+     * Calcola i centri per un k-clustering su un dataset giﾃ� partizionato dai
      * metodi pubblici distribuendo il compito tra l reducer.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centro riesegue
      * PAM tra i risultati di ogni singolo reducer.
