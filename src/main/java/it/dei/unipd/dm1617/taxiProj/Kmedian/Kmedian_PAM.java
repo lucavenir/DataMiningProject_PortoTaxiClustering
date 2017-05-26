@@ -98,13 +98,13 @@ public class Kmedian_PAM {
                         newMedoids[i] = medoids[i];
                     }
                 }
-		// se ho trovato un centro migliore degli attuali aggiorno, altrimenti mi blocco
-                if (best != -1) {
-                   medoids[best] = toReplace;
-                   currentPhi = min;
-                } else {
-                   stop = true;
-                }
+            }
+	    // se ho trovato un centro migliore degli attuali aggiorno, altrimenti mi blocco
+            if (best != -1) {
+                medoids[best] = toReplace;
+                currentPhi = min;
+            } else {
+                stop = true;
             }
         }
         // ritorno il risultato di PAM
