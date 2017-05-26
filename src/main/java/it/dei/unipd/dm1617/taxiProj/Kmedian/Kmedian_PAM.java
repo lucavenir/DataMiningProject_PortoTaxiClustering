@@ -63,9 +63,15 @@ public class Kmedian_PAM {
 
 
         while (!stop) {
-            stop = true;
+            stop = false;
             // processo tutti i punti nella partizione
             Iterator<Position> iter = dataset.iterator();
+		                	
+            // la funzione obbiettivo attuale è quella con cui il minimo va confrontato
+            double min = currentPhi;
+            int best = -1;
+            Position toReplace = null;
+		
             while (iter.hasNext()) {
             	// verifico che prendo in considarazione solo candidati centri diversi dagli attuali
                 Position p = iter.next();
@@ -77,32 +83,27 @@ public class Kmedian_PAM {
                 }
                 // se è un nuovo candidato centro
                 if (!equal) {         
-                	// verifico la funzione obbiettivo minore che si ottiene sostituendo il candidato centro con uno dei k centri
-                	
-                	// la funzione obbiettivo attuale è quella con cui il minimo va confrontato
-                    double min = currentPhi;
-                    int best = -1;
-                    
+                	// verifico la funzione obbiettivo minore che si ottiene sostituendo il candidato centro con uno dei k centri              
                     for (int i = 0; i < k; i++) {
                         // swap p con medoids[i] per sostituzione centro
                         newMedoids[i] = p;
-
                         // calcolo funzione obbiettivo con il nuovo centro
                         double newPhi = objectiveFunction(dataset.iterator(), newMedoids);
                         if (newPhi < min) {
                             min = newPhi;
                             best = i;
+		            toReplace = p;
                         }
                         // rollback dei centri per iterazione successiva
                         newMedoids[i] = medoids[i];
                     }
-                    // se ho trovato un centro migliore degli attuali aggiorno, altrimenti mi blocco
-                    if (best != -1) {
-                        medoids[best] = p;
-                        currentPhi = min;
-                    } else {
-                        stop = true;
-                    }
+                }
+		// se ho trovato un centro migliore degli attuali aggiorno, altrimenti mi blocco
+                if (best != -1) {
+                   medoids[best] = toReplace;
+                   currentPhi = min;
+                } else {
+                   stop = true;
                 }
             }
         }
