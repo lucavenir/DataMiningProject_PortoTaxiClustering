@@ -181,7 +181,7 @@ public class Main {
         
         int numIterations = 60;
         int k = 63;        
-        int alg = KMEANS;
+        int alg = PAM;
         
         
         
@@ -235,7 +235,7 @@ public class Main {
             break;
         }
         long t1 = System.nanoTime();
-        System.out.println("clustering completed ("+(t1-t0)+"ms)");
+        System.out.println("clustering completed ("+(t1-t0)/1000_000+"ms)");
 
         
         
