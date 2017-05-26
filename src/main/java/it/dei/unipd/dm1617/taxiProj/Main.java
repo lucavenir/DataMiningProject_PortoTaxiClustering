@@ -250,14 +250,35 @@ public class Main {
         
         
         
+        int kmedianAlg = 2;
         
-        
-        
+        String imagePath = null;
+        Position[] centers = null;
         Kmedian a = new Kmedian(positions);
-        int l = 4;
-        
-        Position[] centers = a.getPAMCenters(63, l);
-        System.out.println(a.objectiveFunction(centers));
+        int l = 4;	        
+        switch(kmedianAlg)
+        {
+        case 0:
+	        centers = a.getPAMCenters(63, l);
+	        System.out.println(a.objectiveFunction(centers));
+	        imagePath="data/images/kmedianPAM.png";
+        	break;
+        case 1:
+	        centers = a.getCLARACenters(63, l);
+	        System.out.println(a.objectiveFunction(centers));
+	        imagePath="data/images/kmedianCLARA.png";
+        	break;
+        case 2:
+	        centers = a.getCLARAFASTCenters(63);
+	        System.out.println(a.objectiveFunction(centers));
+	        imagePath="data/images/kmedianCLARAFAST.png";
+        	break;
+        case 3:
+	        centers = a.getCLARANSCenters(63);
+	        System.out.println(a.objectiveFunction(centers));
+	        imagePath="data/images/kmedianCLARANS.png";
+        	break;
+        }
         
         
         long drawPAM0 = System.nanoTime();
@@ -267,7 +288,7 @@ public class Main {
         	new ClusteringDrawing(2000,2000).setAlfa(0.6).setLimits(41.35, -8.7, 41.05, -8.4).
 				draw(a.partitionAsRDD(centers),centers.length,null,false).
 				drawCenters(1, 1, 1, 1, centers, 10).
-				save("data/images/kmedianPAM.png");
+				save(imagePath);
         }
         catch (IOException e)  {
             ss.close();
@@ -276,7 +297,6 @@ public class Main {
         }
         long drawPAM1 = System.nanoTime();
         System.out.println("done ("+((drawPAM1-drawPAM0)/1000000)+"ms)");
-        
         
         // Chiudi Spark
         ss.close();
