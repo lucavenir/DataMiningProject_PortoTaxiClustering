@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.spark.api.java.JavaPairRDD;
 import scala.Tuple2;
 
+// classe che esegue PAM iterativi
 public class Kmedian_PAM {   
 	/**
 	 * Esecuzione in parallelo di PAM iterativamente per ogni reducer.
