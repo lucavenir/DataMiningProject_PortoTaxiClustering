@@ -3,8 +3,7 @@
 /bin/
 /build/
 /data/train.csv
-/data/completeDataset.png
-/data/kmeans.png
+/data/images/
 /data/trainFiltered/
 ~*
 .~*

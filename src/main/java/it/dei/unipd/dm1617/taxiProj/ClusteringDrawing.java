@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
@@ -14,6 +15,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
+
+import scala.Tuple2;
 
 /**
  * 
@@ -95,7 +98,7 @@ public class ClusteringDrawing
 		return draw(pos,kmm, null, false);
 	}
 	
-
+	
 	/**
 	 * Disegna i punti forniti, ogni cluster sarà disegnato con un colore diverso
 	 * @param pos Il set dei punti da disegnare
@@ -106,6 +109,38 @@ public class ClusteringDrawing
 	 */
 	public ClusteringDrawing draw(JavaRDD<Position> pos, KMeansModel kmm, int[] retDropCount, boolean writeInfoAboutTheDroppedPoints)
 	{
+
+		JavaRDD<Tuple2<Integer, Position>> posWithClusters;
+		int clustersNum = 0;
+		if(kmm!=null)
+		{
+			posWithClusters = pos.map((p)->{
+				return new Tuple2<>(kmm.predict(p.toVector()), p);
+			});
+			clustersNum = kmm.clusterCenters().length;
+		}
+		else
+		{
+			posWithClusters = pos.map((p)->{
+				return new Tuple2<>(0, p);
+			});
+		}
+		draw(posWithClusters, clustersNum, retDropCount, writeInfoAboutTheDroppedPoints);
+		return this;
+	}
+	
+	
+	/**
+	 * Disegna i punti forniti, ogni cluster sarà disegnato con un colore diverso
+	 * @param pos Il set dei punti da disegnare, con l'id del cluster come chiave
+	 * @param clustersNum The number of clusters
+	 * @param retDropCount Se uguale a null o con length==0 viene ignorato. Se no il numero di punti scartati viene scritto nella prima cella
+	 * @param writeInfoAboutTheDroppedPoints Se impostato a vero vengono scritte su standard output delle informazioni riguardo ai punti scartati
+	 * @return this
+	 */
+	public ClusteringDrawing draw(JavaRDD<Tuple2<Integer,Position>> pos, int clustersNum, int[] retDropCount, boolean writeInfoAboutTheDroppedPoints)
+	{
+		//si sarebbe potuto calcolare clustersNum, ma sarebbe un po' uno spreco, il chiamante dovrebbe saperlo
 		if(		Double.isNaN(topLeftLatitude) ||
 				Double.isNaN(topLeftLongitude) ||
 				Double.isNaN(bottomRightLatitude) ||
@@ -115,11 +150,6 @@ public class ClusteringDrawing
 		int imgWidth = img.getWidth();
 		int imgHeight = img.getHeight();
 		int dropCount=0;	
-		
-		//se non ho il clustering imposto a 0 il numero di cluster, così i punti saranno tutti bianchi
-		int clustersNum = 0;
-		if(kmm!=null)
-			clustersNum = kmm.clusterCenters().length;
 
 		//per scegliere i colori immagino uno spazio 3D in cui ad ogni asse corrisponde un colore tra Red Green e Blue
 		//In questo spazio i colori effettivi stanno in un cubo unitario.
@@ -132,12 +162,12 @@ public class ClusteringDrawing
 			colorCubeLatus = (int)Math.cbrt(clustersNum+1)+1;
 		int step = (int)(colorCubeLatus*colorCubeLatus*colorCubeLatus/(clustersNum+1));//siccome così il numero di punti può anche essere piuttosto più grande del numero di cluster uso solo alcuni punti, in modo da non prendere solo i primi
 		
-		List<Position> pa = pos.collect();//bruttino, bruttino
-		for (Position p : pa)
+		List<Tuple2<Integer, Position>> pa = pos.collect();//bruttino, bruttino
+		for (Tuple2<Integer, Position> t : pa)
 		{
-			int clNum = 1;
-			if(kmm!=null)
-				clNum = kmm.predict(Vectors.dense(p.getPickupLongitude(), p.getPickupLatitude()))+1;
+			int clNum = t._1()+1;
+			Position p = t._2();
+			
 			int colorPos = clNum*step;
 			
 			double a = alfa;
@@ -168,6 +198,7 @@ public class ClusteringDrawing
 				dropCount++;
 				if(writeInfoAboutTheDroppedPoints)
 				{
+					System.out.println(""+p.getPickupLongitude()+", "+p.getPickupLatitude()+" clNum="+clNum);
 					String s = " ";
 					if(p.getPickupLongitude()<topLeftLongitude)
 						s += "longitude too low ";
@@ -195,6 +226,7 @@ public class ClusteringDrawing
 			retDropCount[0]=dropCount;
 		return this;
 	}
+	
 	
 	/**
 	 * Salva l'immagine come png al percorso specificato
@@ -253,5 +285,23 @@ public class ClusteringDrawing
 			}
 		}
 		return this;
+	}
+	
+	/**
+	 * Disegna i centri dei cluster come dei quadrati del colore e della dimensione specificata
+	 * @param r rosso: valore da 0 a 1
+	 * @param g verde: valore da 0 a 1
+	 * @param b blu: valore da 0 a 1
+	 * @param a trasparenza: valore da 0 (trasparente) a 1 (opaco)
+	 * @param centers Lista dei centri
+	 * @param size Lato dei quadrati
+	 * @return this
+	 */
+	public ClusteringDrawing drawCenters(double r, double g, double b, double a, Position[] centers, int size)
+	{
+		Vector[] centersVec = new Vector[centers.length];
+		for(int i=0;i<centers.length;i++)
+			centersVec[i] = centers[i].toVector();
+		return drawCenters(r,g,b,a,centersVec,size);
 	}
 }

@@ -321,6 +321,30 @@ public class Kmedian {
             return new Tuple2(best, point);
         }).collect();
     }
+    
+    /**
+     * JavaRDD contenente l'intero dataset partizionato.
+     *
+     * @param centers centri dei clusters, Array di l elementi, uno per ogni
+     * reducer contenente k centri
+     * @return Lista contenente il dataset partizionato, nel primo elemento di ciascuna tupla l'indice della partizione 
+     * (pari all'indice del centro nell array inserito) nel secondo la posizione.
+     */
+    public JavaRDD<Tuple2<Integer, Position>> partitionAsRDD(Position[] centers) {
+        return dataset.map((point) -> {
+            //controllo la distanza di un punto con ogni centro e assegno al migliore
+            double min = Position.distance(point, centers[0]);
+            int best = 0;
+            for (int i = 1; i < centers.length; i++) {
+                double distance =  Position.distance(point, centers[i]);
+                if (distance < min) {
+                    min = distance;
+                    best = i;
+                }
+            }
+            return new Tuple2<>(best, point);
+        });
+    }
 
     /**
      * Calcolo della funzione obbiettivo dati dei centri.

@@ -14,18 +14,7 @@ import scala.Tuple2;
  * Sostituisce la classe "Distanza" che avevo creato (a suo tempo) un po' a casaccio..
  * 
  */
-public class Utils {
-	/**
-	 * Restituisce una copia della nostra classe Position in un formato "leggibile" da Spark
-	 * 
-	 * @param p: il punto da trasformare in Vector
-	 * @return il vettore di classe Vector contenente lat e long della classe Position
-	 */
-	
-	public static Vector toVector (Position p) {
-		return Vectors.dense(p.getPickupLatitude(), p.getPickupLongitude());
-	}
-	
+public class Utils {	
 	/**
 	 * 
 	 * @param in_clusters: il modello che contiene un modello già "train-ato"
@@ -61,9 +50,9 @@ public class Utils {
         	JavaRDD<Tuple2<Position,Double>> posdist = in_pos.map((p) -> {
         		// "Questo punto ha lo stesso indice dell'attuale centro?"
         		
-				if (in_clusters.predict(Utils.toVector(p)) == in_clusters.predict(center)) {
+				if (in_clusters.predict(p.toVector()) == in_clusters.predict(center)) {
 					// Se quel punto appartiene all'i-esimo cluster considerato, allora calcolane la distanzaì
-        			return new Tuple2<Position, Double>(p, Position.distance(p, Utils.toPosition(center)));
+        			return new Tuple2<Position, Double>(p, Position.distance(p, new Position(center)));
 				} else {
 					// Se non è così, metti la guardia "meno uno", come detto prima
         			return new Tuple2<Position, Double>(p, (double) -1);
@@ -85,16 +74,5 @@ public class Utils {
         
         
 		return new Tuple2<Position[],Double[]> (punti_massimi, dist_massima);
-	}
-	
-	/**
-	 * Dato un generico vettore (coppia di numeri, quindi bidimensionale), lo trasforma in una classe Position
-	 * 
-	 * @param v: il vettore da trasformare in Position
-	 * @return un punto
-	 */
-	public static Position toPosition(Vector v) {
-		// ATTENZIONE all'ordine, qui!!
-		return new Position (v.apply(1), v.apply(0));
 	}
 }

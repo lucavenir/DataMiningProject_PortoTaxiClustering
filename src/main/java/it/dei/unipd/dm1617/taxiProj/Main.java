@@ -9,33 +9,19 @@ import scala.Tuple2;
 
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.Function;
-
 // Import per il servizio Timestamp
 import java.sql.Timestamp;
-
-import javax.imageio.ImageIO;
 
 // Import per K means
 import org.apache.spark.mllib.clustering.KMeans;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.Vectors;
-
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 // Serve per verificare se il dataset iniziale e' stato gia' filtrato
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 
-//logger
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
 
 /**
  * 
@@ -141,22 +127,21 @@ public class Main {
         
         
        
-    	long t0draw = System.nanoTime();
+    	long t0_drawComplete = System.nanoTime();
         System.out.println("drawing positions...");
-		ClusteringDrawing cd = new ClusteringDrawing(2000,2000).
-				setLimits(41.35, -8.7, 41.05, -8.4).
-				setAlfa(0.8).
-				draw(positions, null, null);
         try
         {
-            cd.save("data/completeDataset.png");
+        	new ClusteringDrawing(2000,2000).setLimits(41.35, -8.7, 41.05, -8.4).setAlfa(0.8).
+				draw(positions, null, null).
+				save("data/images/completeDataset.png");
         }
-        catch (IOException e)
-        {
+        catch (IOException e){
+        	ss.close();
+        	sc.close();
             throw new RuntimeException("error saving img");
         }
-        long t1draw = System.nanoTime();
-        System.out.println("done ("+((t1draw-t0draw)/1000000)+"ms)");
+        long t1_drawComplete = System.nanoTime();
+        System.out.println("done ("+((t1_drawComplete-t0_drawComplete)/1000000)+"ms)");
         
         
         
@@ -171,17 +156,9 @@ public class Main {
          * Trasforma i dati in modo tale da essere passati a Kmeans
          * L'id viene eliminato
          */
-        
-        JavaRDD<Vector> K_meansData = positions.map(
-        		  new Function<Position, Vector>() {
-        		    public Vector call(Position s) {
-        		      double[] values = new double[2];
-        		      values[0] = s.getPickupLongitude();
-        		      values[1] = s.getPickupLatitude();
-        		      return Vectors.dense(values);
-        		    }
-        		  }
-		).cache();
+       
+        JavaRDD<Vector> K_meansData = positions.map((p)->p.toVector()).cache();
+        		  
         
         /*
          * Crea un clustering k means
@@ -216,27 +193,30 @@ public class Main {
         System.out.println("done.");
 
         
-        t0draw = System.nanoTime();
+        
+        
+        
+        
+        long t0_drawKMeans = System.nanoTime();
         System.out.println("drawing positions...");
-		ClusteringDrawing cdkm = new ClusteringDrawing(2000,2000).
-				setAlfa(0.6).
-				setLimits(41.35, -8.7, 41.05, -8.4).
-				draw(positions, clusters, null).
-				drawCenters(1, 1, 1, 1, clusters.clusterCenters(), 10);
         try
         {
-            cdkm.save("data/kmeans.png");
+        	new ClusteringDrawing(2000,2000).setAlfa(0.6).setLimits(41.35, -8.7, 41.05, -8.4).
+				draw(positions, clusters, null, false).
+				drawCenters(1, 1, 1, 1, clusters.clusterCenters(), 10).
+				save("data/images/kmeans.png");
         }
-        catch (IOException e)
-        {
+        catch (IOException e){
+            ss.close();
+            sc.close();
             throw new RuntimeException("error saving img");
         }
-        t1draw = System.nanoTime();
-        System.out.println("done ("+((t1draw-t0draw)/1000000)+"ms)");
+        long t1_drawKMeans = System.nanoTime();
+        System.out.println("done ("+((t1_drawKMeans-t0_drawKMeans)/1000000)+"ms)");
         
         
-        if(false)
-        {        
+        
+    
         /*
          * Creo un'istanza di Timestamp da end-init: viene creata una data-ora (che sarà vicina a 00:00 del 1/1/1970);
          * Serve per stampare minuti/secondi dell'esecuzione del clustering
@@ -265,7 +245,8 @@ public class Main {
         double WSSSE = clusters.computeCost(K_meansData.rdd());
         System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
         
-        }
+        
+        
         
         
         
@@ -277,10 +258,30 @@ public class Main {
         
         Position[] centers = a.getPAMCenters(63, l);
         System.out.println(a.objectiveFunction(centers));
+        
+        
+        long drawPAM0 = System.nanoTime();
+        System.out.println("drawing positions...");
+        try
+        {
+        	new ClusteringDrawing(2000,2000).setAlfa(0.6).setLimits(41.35, -8.7, 41.05, -8.4).
+				draw(a.partitionAsRDD(centers),centers.length,null,false).
+				drawCenters(1, 1, 1, 1, centers, 10).
+				save("data/images/kmedianPAM.png");
+        }
+        catch (IOException e)  {
+            ss.close();
+            sc.close();
+            throw new RuntimeException("error saving img");
+        }
+        long drawPAM1 = System.nanoTime();
+        System.out.println("done ("+((drawPAM1-drawPAM0)/1000000)+"ms)");
+        
+        
         // Chiudi Spark
         ss.close();
         sc.close();
         
         
     }
-}
+   }
