@@ -1,90 +1,114 @@
 package it.dei.unipd.dm1617.taxiProj;
 
-import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.Vectors;
+// Import per gestire Spark
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.clustering.KMeansModel;
 
+// Import per gestire le strutture dati
 import scala.Tuple2;
+import org.apache.spark.mllib.linalg.Vector;
+import org.apache.spark.mllib.linalg.Vectors;
+import java.util.List;
 
 /**
  * @author Venir
  * 
  * Contiene funzioni a noi utili definite e/o implementate da noi.
- * Sostituisce la classe "Distanza" che avevo creato (a suo tempo) un po' a casaccio..
  * 
  */
 public class Utils {
+	
 	/**
 	 * Restituisce una copia della nostra classe Position in un formato "leggibile" da Spark
 	 * 
 	 * @param p: il punto da trasformare in Vector
 	 * @return il vettore di classe Vector contenente lat e long della classe Position
 	 */
-	
+		
 	public static Vector toVector (Position p) {
 		return Vectors.dense(p.getPickupLatitude(), p.getPickupLongitude());
 	}
 	
 	/**
+	 * E' una metrica di valutazione dei cluster ottenuti dai KMeans:
+	 * restituisce due utili indici di variabilità dei cluster.
 	 * 
-	 * @param in_clusters: il modello che contiene un modello già "train-ato"
+	 * 
+	 * @param in_clusters: il modello che contiene un modello gia' "train-ato"
 	 * @param in_pos: dataset di punti
 	 * 
-	 * @return Una coppia fatta da due vettori che contengono, per ogni cluster i,
-	 * il punto a distanza massima nel suo cluster e la relativa distanza 
+	 * @return Ritorna la coppia:
+	 * (MEDIA,VARIANZA) su: MAX (Distanza(p, ci), con appartenente al cluster Ci), per ogni 1<i<k.
 	 */
 	
-	public static Tuple2<Position[],Double[]> calcolaMaxDistanze (KMeansModel in_clusters, JavaRDD<Position> in_pos) {
-		// Per osservare l'i-esimo cluster uso il seguente indice:
-        int i=0;
-        // Catturo il numero di cluster
-        int k = in_clusters.k();
-        // L'i-esima componente del seguente vettore contiene il punto più distante dal centro del cluster i
-        Position[] punti_massimi = new Position [k];
-        // L'i-esima componente del seguente vettore contiene tale distanza
-        Double[] dist_massima = new Double[k];
-        
-        // Per ogni centro significa per noi "per ogni cluster"
-        for (Vector center: in_clusters.clusterCenters()) {
-        	/* 
-        	 * Il modo più rapido per verificare se un punto appartiene ad un cluster è usare il metodo .predict
-        	 * che ritorna l'indice del cluster più vicino a al punto p ("Position", da convertire in "Vector") dato in input
-        	 * 
-        	 * Visto che mi interessa determinare la massima distanza, la metto uguale a -1 se
-        	 * quel punto non appartiene al quel cluster (ovvero, nella ricerca del massimo esso verrà escluso sicuramente)
-        	 * 
-        	 * Per fare tutto ciò eseguo un map delle posizioni colle loro distanze nel nuovo oggetto:
-        	 * JavaRDD(posizione, distanza_dal_suo_centro)
-        	 */
-        	
-        	JavaRDD<Tuple2<Position,Double>> posdist = in_pos.map((p) -> {
-        		// "Questo punto ha lo stesso indice dell'attuale centro?"
-        		
-				if (in_clusters.predict(Utils.toVector(p)) == in_clusters.predict(center)) {
-					// Se quel punto appartiene all'i-esimo cluster considerato, allora calcolane la distanzaì
-        			return new Tuple2<Position, Double>(p, Position.distance(p, Utils.toPosition(center)));
-				} else {
-					// Se non è così, metti la guardia "meno uno", come detto prima
-        			return new Tuple2<Position, Double>(p, (double) -1);
-				}
-        	});
-        	
-        	/* Estrae il massimo dalla struttura dati sopra, dicendogli di usare la distanza (Double),
-        	 * contenuta nel secondo parametro della tupla, come misura di confronto
-        	 */
-			Tuple2<Position, Double> max_p_dist = posdist.max(new TupleValueComparator());
-        	
-			// Adesso salvo i risultati ottenuti: qui salvo il punto a distanza massima dall'i-esimo cluster
-			punti_massimi[i] = max_p_dist._1();
-			// Qui invece salvo la distanza stessa
-			dist_massima[i] = max_p_dist._2();
-        	
-        	i++;
-        }
-        
-        
-		return new Tuple2<Position[],Double[]> (punti_massimi, dist_massima);
+	public static Tuple2<Double, Double> calcolaMaxDistanze (KMeansModel in_clusters, JavaRDD<Position> in_pos) {
+		// Inizializzazione/Dichiarazione delle variabili
+		
+		
+		// Catturo il numero di cluster del modello
+		int k = in_clusters.k();
+		
+		// Catturo i centri dei k cluster
+		Vector[] centers = in_clusters.clusterCenters();
+		
+		// Inizializzo la ricerca di massimo: c'e' una massima distanza per ogni cluster
+		/*
+		max = new Double[k];
+		for (int i=0; i<k; i++)
+			max[i] = 0.0;
+		*/
+		/*
+		// Faccio la stessa cosa, ma per l'argmax: i punti a distanza massima dal loro cluster
+		pmax = new Position[k];
+		*/
+		
+		/*
+		 * Map phase: calcolo la distanza di ogni punto dal suo cluster.
+		 * Chiave: intero che rappresenta l'indice del cluster;
+		 * Value: Distanza(p,c(i)), con i=indice del cluster e p appartenente a tale cluster.
+		 * 
+		 * Reduce phase: estraggo il massimo per ogni chiave (cluster).
+		 */
+		
+		JavaPairRDD<Integer, Double> maxdist = in_pos.mapToPair((p) -> {
+			int i = in_clusters.predict(Utils.toVector(p));
+			return new Tuple2<Integer, Double>(i, Position.distance(p, Utils.toPosition(centers[i])));
+		}).reduceByKey((i, j) -> Double.max(i, j));
+		
+		/*
+		 * Ci aspettiamo che l'output dato dalla fase di reduce sia
+		 * sufficientemente piccolo da riuscire a stare
+		 * dentro la memoria del driver.
+		 * 
+		 * (e lo e': e' solo un vettore di indici/distanze lungo k)
+		 * 
+		 * cio' giustifica collect()
+		 */
+		
+		List<Tuple2<Integer, Double>> maxdistlist = maxdist.collect();
+		
+		/* 
+		 * Di questa lista/vettore sono solamente interessato alle distanze, perche' ne devo calcolare
+		 * la media (non sono nemmeno interessato all'ordine: ho gia' visto che il metodo collect() 
+		 * non mantiene l'ordine dei cluster (1, ..., k)); tanto meglio.
+		 * 
+		 * Catturo tali distanze e carico la somma dei valori in un unico valore double
+		 * Al fine di calcolare media e varianza
+		 */
+		double accumulatore_media = 0;
+		double accumulatore_varianza = 0;
+		
+		for (int i=0; i<k; i++) {
+			accumulatore_media += maxdistlist.get(i)._2();
+			accumulatore_varianza += maxdistlist.get(i)._2()*maxdistlist.get(i)._2();
+		}
+		double media = accumulatore_media/k;
+		double devstand = Math.sqrt(accumulatore_varianza/(k-1));
+		
+		// L'output e' appunto la coppia media/deviazione standard
+		return new Tuple2<Double, Double>(media, devstand);
+		
 	}
 	
 	/**

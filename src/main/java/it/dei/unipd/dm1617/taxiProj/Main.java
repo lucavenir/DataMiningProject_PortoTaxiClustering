@@ -100,9 +100,9 @@ public class Main {
         SparkSession ss = new SparkSession(sc.sc());
         
         /*
-         * Per velocizzare la prima lettura del dataset viene salvato gia'� filtrato in automatico nell cartella data
+         * Per velocizzare la prima lettura del dataset viene salvato gia' filtrato in automatico nell cartella data
          * Nelle successive esecuzioni viene letto direttamente il dataset alleggerito
-         * Edit: in realta'� ho scoperto dopo che spark e' intelligente e teoricamente tiene i dati in memoria
+         * Edit: in realta' ho scoperto dopo che spark e' intelligente e teoricamente tiene i dati in memoria
          * temporaneamente
          */
         
@@ -132,17 +132,27 @@ public class Main {
          * Trasforma i dati in modo tale da essere passati a Kmeans
          * L'id viene eliminato
          */
+        JavaRDD<Vector> K_meansData = positions.map((s) -> {
+
+		      double[] values = new double[2];
+		      values[0] = s.getPickupLatitude();
+		      values[1] = s.getPickupLongitude();
+		      return Vectors.dense(values);
+		      
+        }).cache();
         
+        /*
         JavaRDD<Vector> K_meansData = positions.map(
         		  new Function<Position, Vector>() {
         		    public Vector call(Position s) {
-        		      double[] values = new double[2];
-        		      values[0] = s.getPickupLatitude();
-        		      values[1] = s.getPickupLongitude();
-        		      return Vectors.dense(values);
+          		      double[] values = new double[2];
+          		      values[0] = s.getPickupLatitude();
+          		      values[1] = s.getPickupLongitude();
+          		      return Vectors.dense(values);
         		    }
         		  }
 		).cache();
+        */
         
         /*
          * Crea un clustering k means
@@ -180,14 +190,11 @@ public class Main {
          */
         Timestamp t = new Timestamp (end-init);
         
-        // Calcolo dei punti a massima distanza dal centro del loro cluster + Print dei centri
-        Tuple2<Position[],Double[]> maxdist = Utils.calcolaMaxDistanze(clusters, positions);
+        // Calcolo dei punti a massima distanza dal centro del loro cluster
+        Tuple2<Double, Double> mediavarianza = Utils.calcolaMaxDistanze(clusters, positions);
+        System.out.println("Media delle massime distanze: " + mediavarianza._1());
+        System.out.println("Deviazione standard delle massime distanze: " + mediavarianza._2());
         
-        // Stampa dei risultati sopra ottenuti
-        for (int i=0; i<k; i++) {
-        	System.out.println("Cluster #" + (i+1) + ", con centro: " + clusters.clusterCenters()[i]);
-        	System.out.println("Punto a massima distanza: " + maxdist._1()[i] + " (d: " + maxdist._2()[i] + ")");
-        }
         
         /*
          * Per qualche strano motivo (che non voglio indagare),
