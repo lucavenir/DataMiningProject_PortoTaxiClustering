@@ -35,7 +35,7 @@ public class InputOutput {
         JavaRDD<TaxiTrip> taxiTripsC = rdd.filter((t) -> t.getCallType().contains("C"));
         
         /*
-         * Ho notato che nel dataset anche se missingData è ugale a FALSE, comunque mancano dati.
+         * Ho notato che nel dataset anche se missingData e' uguale a FALSE, comunque mancano dati.
          * Ho scelto quindi di filtrare in modo molto semplice vedendo se polyline ha una lunghezza minima
          */
         JavaRDD<TaxiTrip> taxiTripsFiltered = taxiTripsC.filter((t) -> (t.getPolyline().length() > 5));
