@@ -275,14 +275,9 @@ public class Main {
 	        Timestamp t = new Timestamp (t1-t0);
 	        
 	        // Calcolo dei punti a massima distanza dal centro del loro cluster + Print dei centri
-	        Tuple2<Position[],Double[]> maxdist = Utils.calcolaMaxDistanze(kmeansClusters, positions);
+	        Tuple2<Double, Double> maxdist = Utils.calcolaMaxDistanze(kmeansClusters, positions);
 	        
-	        // Stampa dei risultati sopra ottenuti
-	        for (int i=0; i<k; i++) {
-	        	System.out.println("Cluster #" + (i+1) + ", con centro: " + kmeansClusters.clusterCenters()[i]);
-	        	System.out.println("Punto a massima distanza: " + maxdist._1()[i] + " (d: " + maxdist._2()[i] + ")");
-	        }
-	        
+	        System.out.println("Media e Dev Standard: " + maxdist._1() + " , " + maxdist._2());
 	        /*
 	         * Per qualche strano motivo (che non voglio indagare),
 	         * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
