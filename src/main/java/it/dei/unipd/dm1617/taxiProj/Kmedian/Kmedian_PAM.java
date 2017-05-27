@@ -63,7 +63,7 @@ public class Kmedian_PAM {
 
 
         while (!stop) {
-            stop = false;
+            stop = true;
             // processo tutti i punti nella partizione
             Iterator<Position> iter = dataset.iterator();
 		                	
@@ -72,7 +72,7 @@ public class Kmedian_PAM {
             int best = -1;
             Position toReplace = null;
 		
-            while (iter.hasNext()) {
+            while (iter.hasNext() && stop) {
             	// verifico che prendo in considarazione solo candidati centri diversi dagli attuali
                 Position p = iter.next();
                 boolean equal = false;
@@ -92,20 +92,20 @@ public class Kmedian_PAM {
                         if (newPhi < min) {
                             min = newPhi;
                             best = i;
-		            toReplace = p;
+                            toReplace = p;
                         }
                         // rollback dei centri per iterazione successiva
                         newMedoids[i] = medoids[i];
                     }
                 }
+                // se ho trovato un centro migliore degli attuali aggiorno, altrimenti mi blocco
+                if (best != -1) {
+                    medoids[best] = toReplace;
+                    currentPhi = min;
+                    stop = false;
+                }
             }
-	    // se ho trovato un centro migliore degli attuali aggiorno, altrimenti mi blocco
-            if (best != -1) {
-                medoids[best] = toReplace;
-                currentPhi = min;
-            } else {
-                stop = true;
-            }
+	   
         }
         // ritorno il risultato di PAM
         return medoids;
@@ -113,7 +113,7 @@ public class Kmedian_PAM {
 
     /**
      * Calcolo della funzione obbiettivo dati dei medoidi e la lista di punti da processare.
-     * In Kmedian il valore della funzione obbiettivo è pari alla somma di ogni punto al centro a lui più vicino.
+     * In Kmedian il valore della funzione obbiettivo ﾃｨ pari alla somma di ogni punto al centro a lui piﾃｹ vicino.
      * 
      * @param iter lista di punti da processare
      * @param medoids centri da cui calcolare la funzione obbiettivo
