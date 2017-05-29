@@ -78,7 +78,7 @@ public class Position implements Serializable {
 	}
 	
 	public String toString() {
-		return "[" + pickup_latitude + "," + pickup_longitude + "]"; 
+		return "[" + pickup_latitude + ", " + pickup_longitude + "]"; 
 	}
 	
 	/**

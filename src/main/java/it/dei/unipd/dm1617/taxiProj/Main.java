@@ -170,8 +170,8 @@ public class Main {
         JavaRDD<Vector> K_meansData = null; //viene inizializzato dopo, nello switch
         
         int numIterations = 60;
-        int k = 63;
-        int alg = PAM;
+        int k = 10;
+        int alg = KMEANS;
         
         String imagePath = null;
         Position[] centers = null;
@@ -212,14 +212,17 @@ public class Main {
                Quindi i punti vengono considerati come
                planari e non considerano il fatto che la reale distanza dipenda anche dalla curva della terra.
              * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
-             * Da wikipedia:
-               A medoid can be defined as the object of a cluster whose average dissimilarity to all the objects in the cluster
-               is minimal. (i.e. it is a most centrally located point in the cluster)
              */
         	System.out.println("running KMEANS...");
         	K_meansData = positions.map((p)->p.toVector()).cache();
             kmeansClusters = KMeans.train(K_meansData.rdd(), k, numIterations);
 	        imagePath="data/images/kmeans.png";
+			Vector[] centri =  kmeansClusters.clusterCenters();
+			centers = new Position[centri.length];
+			for (int i = 0; i < centri.length; i++) {
+				centers[i] = new Position(centri[i].apply(0), centri[i].apply(1));
+			}
+			System.out.println("Objective Function: " +  a.objectiveFunction(centers));
             break;
         }
         long t1 = System.nanoTime();
@@ -257,9 +260,6 @@ public class Main {
         System.out.println("done ("+((draw_t1-draw_t0)/1000000)+"ms)");
         
         
-        
-        
-        
         if(alg==KMEANS)
         {
 	        
@@ -287,12 +287,8 @@ public class Main {
 	        System.out.println(t.toLocalDateTime().getMinute() + " minutes and " + t.toLocalDateTime().getSecond() + " seconds");
 	        System.out.println("k=" + k);
 	        System.out.println("K-means space: " + space + " kB");
-	        // E' solo un esempio. Non sara' la distanza che noi dobbiamo minimizzare.
-	        double WSSSE = kmeansClusters.computeCost(K_meansData.rdd());
-	        System.out.println("Within Set Sum of Squared Errors = " + WSSSE);
-	        
-	        
-        }
+	        // E' solo un esempio. Non sara' la distanza che noi dobbiamo minimizzare.	        
+        } 
         
         
         
