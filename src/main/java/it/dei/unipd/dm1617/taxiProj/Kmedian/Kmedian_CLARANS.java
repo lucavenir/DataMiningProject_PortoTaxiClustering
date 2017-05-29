@@ -130,7 +130,7 @@ public class Kmedian_CLARANS {
         }
 
         // calcolo la funzione obbiettivo per i centri trovati
-        double initialPhi[] = objectiveFunction(list.iterator(), medoids, nlocal, k);
+        double initialPhi[] = objectiveFunction(list.iterator(), medoids, k, nlocal);
 
         while (!stop) {
         	// generazione dei vicini dei centri attuali (vicino = medoids ma con uno dei centri diverso)
