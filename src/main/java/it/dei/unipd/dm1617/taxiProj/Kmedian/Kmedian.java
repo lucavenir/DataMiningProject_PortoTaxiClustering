@@ -72,7 +72,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getCLARACenters(int k) {
-        final int l = (int) (Math.sqrt(n)/k);
+        final int l = (int) (Math.sqrt(n/k));
         // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
@@ -94,7 +94,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getCLARACenters(int k, final int l) {
-        final int lmax = (int) (Math.sqrt(n)/k);
+        final int lmax = (int) (Math.sqrt(n/k));
         if (l >= lmax || l < 0) {
             //ignoro l se troppo grande
             return getCLARACenters(k);
@@ -247,7 +247,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getPAMCenters(int k, final int l) {
-        final int lmax = (int) (Math.sqrt(n)/k);
+        final int lmax = (int) (Math.sqrt(n/k));
         if (l > lmax || l < 0) {
             return getPAMCenters(k);
         } else {
@@ -269,7 +269,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getPAMCenters(int k) {
-        final int lmax = (int) (Math.sqrt(n)/k);
+        final int lmax = (int) (Math.sqrt(n/k));
         // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
