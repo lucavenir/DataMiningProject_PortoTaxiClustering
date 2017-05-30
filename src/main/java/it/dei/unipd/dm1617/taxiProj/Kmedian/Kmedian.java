@@ -383,38 +383,47 @@ public class Kmedian {
      * @return La funzione obbiettivo di ciascun reducer
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
-        /*
+        
         Double[] initialEntry = new Double[l];
         for(Double entry: initialEntry){
             entry = Double.valueOf(0);
         };
-                Double[] d = dataset.aggregate(initialEntry, 
-                (tempD, point)->{
-                    for (int ireducer = 0; ireducer < l; ireducer++) {
-                    double min = Position.distance(point, centers[ireducer][0]);
-                    int best = 0;
-                    for (int ik = 1; ik < centers[ireducer].length; ik++) {
-                        double distance = Position.distance(point, centers[ireducer][ik]);
-                        if (distance < min) {
-                            min = distance;
-                            best = ik;
-                        }
+        return dataset.aggregate(initialEntry, 
+            (tempD, point)->{
+                for (int ireducer = 0; ireducer < l; ireducer++) {
+                double min = Position.distance(point, centers[ireducer][0]);
+                int best = 0;
+                for (int ik = 1; ik < centers[ireducer].length; ik++) {
+                    double distance = Position.distance(point, centers[ireducer][ik]);
+                    if (distance < min) {
+                        min = distance;
+                        best = ik;
                     }
-                    tempD[ireducer] = min;
                 }
+                tempD[ireducer] = min;
+            }
             return tempD;   
         }, (phi1, phi2) -> {
-            for (int i = 0; i < phi1.length; i++) {
-                phi1[i] += phi2[i];
-            }
-            return phi1;
+                //al primo giro c'è un confronto con una lista vuota   
+                boolean n1 = (phi1[0] == null);
+                boolean n2 = (phi2[0] == null);
+
+                if (n1 && !n2) {
+                    return phi2;
+                } else if (!n1 && n2) {
+                    return phi1;
+                } else if (n1 && n2) {
+                    for (Double e : phi1) {
+                        e = Double.valueOf(0);
+                    }
+                    return phi1;
+                }
+                return phi1;
         });
-        
-        return d;*/
         /*
         utilizzo versione con aggregate perché è migliore ma tengo questa per rollback
         */
-        
+        /*
         
         JavaRDD<Double[]> dpartition = dataset.map((point) -> {
             //controllo la distanza di un punto con ogni centro e assegno al migliore
@@ -440,7 +449,7 @@ public class Kmedian {
                 phi1[i] += phi2[i];
             }
             return phi1;
-        });
+        });*/
     }
 
 }
