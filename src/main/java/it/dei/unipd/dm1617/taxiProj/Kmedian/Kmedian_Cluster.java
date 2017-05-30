@@ -11,7 +11,7 @@ import scala.Tuple2;
 
 // versione uguale ma devrebbe funzionare meglio se lo lanciamo con un cluster
 
-public class Kmedian {
+public class Kmedian_Cluster {
     private final JavaRDD<Position> dataset; // RDD dataset
     private final long n;                    // dimensione dataset
 
