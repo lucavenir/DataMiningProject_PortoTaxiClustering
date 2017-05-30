@@ -284,12 +284,13 @@ public class Main {
 	         */
 	        // Filtro a caso
 	        JavaRDD<Position> position_randomly_filtered = positions.filter((p) -> {
-	        	if (Math.random() < 0.25)
+	        	if (Math.random() < 0.00005)
 	        		return true;
 	        	else
 	        		return false;
 	        });
 	        
+	        System.out.println("Dimensione del dataset: " + position_randomly_filtered.count());
 	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
 	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
 	        System.out.println("\n\n\n MEDIA, DEV STANDARD: \n" + maxdist._1() + " , " + maxdist._2());
