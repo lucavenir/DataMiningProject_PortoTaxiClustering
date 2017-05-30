@@ -213,7 +213,7 @@ public class Main {
              * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
              */
         	System.out.println("running KMEANS...");
-        	K_meansData = positions.map((p)->p.toVector(false)).cache(); // Importante: mantenere il parametro a FALSE
+        	K_meansData = positions.map((p)->p.toVector()).cache(); // Importante: mantenere il parametro a FALSE
             kmeansClusters = KMeans.train(K_meansData.rdd(), k, numIterations);
 	        imagePath="data/images/kmeans.png";
 			Vector[] centri =  kmeansClusters.clusterCenters();
@@ -277,17 +277,24 @@ public class Main {
 	        System.out.println("Dimensione del cluster kmeansClusters: " + kmeansClusters.k());
 	        Tuple2<Double, Double> maxdist = Utils.calcolaMaxDistanze(kmeansClusters, positions);
 	        
-	        System.out.println("Media e Dev Standard: " + maxdist._1() + " , " + maxdist._2());
 	        /*
 	         * Per qualche strano motivo (che non voglio indagare),
 	         * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
 	         * Allora tocca "passare" per la classe LocalDateTime che questi metodi li ha. 
 	         */
-	        System.out.print("K-means time: ");
+	        JavaRDD<Position> position_randomly_filtered = positions.filter((p) -> {
+	        	if (Math.random() < 0.25)
+	        		return true;
+	        	else
+	        		return false;
+	        });
+	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
+	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
+	        System.out.println("\n\n\n MEDIA, DEV STANDARD: \n" + maxdist._1() + " , " + maxdist._2());
+	        System.out.println("K-means time: ");
 	        System.out.println(t.toLocalDateTime().getMinute() + " minutes and " + t.toLocalDateTime().getSecond() + " seconds");
 	        System.out.println("k=" + k);
-	        System.out.println("K-means space: " + space + " kB");
-	        // E' solo un esempio. Non sara' la distanza che noi dobbiamo minimizzare.	        
+	        System.out.println("K-means space: " + space + " kB");       
         }
         
         

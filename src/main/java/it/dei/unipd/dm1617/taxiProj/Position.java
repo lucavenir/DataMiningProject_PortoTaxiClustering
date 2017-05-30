@@ -155,10 +155,7 @@ public class Position implements Serializable {
 	 * @param L'ordine selezionato
 	 * @return La coppia di coordinate in classe Vector
 	 */
-	public Vector toVector(boolean ordine) {
-		if (!ordine)
-			return Vectors.dense(getPickupLatitude(), getPickupLongitude());
-		else
-			return Vectors.dense(getPickupLongitude(), getPickupLatitude());
+	public Vector toVector() {
+		return Vectors.dense(getPickupLongitude(), getPickupLatitude());
 	}
 }
