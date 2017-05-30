@@ -386,10 +386,10 @@ public class Kmedian {
                 Double[] d = dataset.aggregate(new Double[l], 
                 (tempD, point)->{
                     for (int ireducer = 0; ireducer < l; ireducer++) {
-                    double min = Position1.distance(point, centers[ireducer][0]);
+                    double min = Position.distance(point, centers[ireducer][0]);
                     int best = 0;
                     for (int ik = 1; ik < centers[ireducer].length; ik++) {
-                        double distance = Position1.distance(point, centers[ireducer][ik]);
+                        double distance = Position.distance(point, centers[ireducer][ik]);
                         if (distance < min) {
                             min = distance;
                             best = ik;
