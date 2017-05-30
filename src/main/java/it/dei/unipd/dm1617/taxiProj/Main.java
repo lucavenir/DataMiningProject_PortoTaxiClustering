@@ -43,6 +43,10 @@ public class Main {
 	private static final int CLARANS = 3;
 	private static final int KMEANS = 4;
 	
+	private static final double IMAGE_MIN_LAT = 41.05;
+	private static final double IMAGE_MAX_LAT = 41.35;
+	private static final double IMAGE_MIN_LONG = -8.7;
+	private static final double IMAGE_MAX_LONG = -8.4;
 	
     public static void main(String[] args) {
     	/*
@@ -146,7 +150,8 @@ public class Main {
         System.out.println("drawing positions...");
         try
         {
-        	new ClusteringDrawing(2000,2000).setLimits(41.35, -8.7, 41.05, -8.4).setAlfa(0.8).
+        	new ClusteringDrawing(2000,2000).setAlfa(0.8).
+        		setLimits(IMAGE_MAX_LAT, IMAGE_MIN_LONG, IMAGE_MIN_LAT, IMAGE_MAX_LONG).
 				draw(positions, null, null).
 				save("data/images/completeDataset.png");
         }
@@ -237,14 +242,16 @@ public class Main {
         {
         	if(alg==KMEANS)
         	{
-        		new ClusteringDrawing(2000,2000).setAlfa(0.6).setLimits(41.35, -8.7, 41.05, -8.4).
+        		new ClusteringDrawing(2000,2000).setAlfa(0.6).
+        			setLimits(IMAGE_MAX_LAT, IMAGE_MIN_LONG, IMAGE_MIN_LAT, IMAGE_MAX_LONG).
 					draw(positions, kmeansClusters, null, false).
 					drawCenters(1, 1, 1, 1, kmeansClusters.clusterCenters(), 10).
 					save(imagePath);
         	}
         	else
         	{
-	        	new ClusteringDrawing(2000,2000).setAlfa(0.6).setLimits(41.35, -8.7, 41.05, -8.4).
+	        	new ClusteringDrawing(2000,2000).setAlfa(0.6).
+	        		setLimits(IMAGE_MAX_LAT, IMAGE_MIN_LONG, IMAGE_MIN_LAT, IMAGE_MAX_LONG).
 					draw(a.partitionAsRDD(centers),centers.length,null,false).
 					drawCenters(1, 1, 1, 1, centers, 10).
 					save(imagePath);

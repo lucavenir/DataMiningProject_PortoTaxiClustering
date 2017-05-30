@@ -266,11 +266,13 @@ public class ClusteringDrawing
 		
 		for(Vector c: centers)
 		{			
-			double[] ca = c.toArray();
+			Position cp = new Position(c);
 			//System.out.println(""+ca[0]+", "+ca[1]+" "+ca.length);
-			int xc = (int)Math.round((ca[0] - topLeftLongitude)/(bottomRightLongitude - topLeftLongitude)*img.getWidth()); 
-			int yc = (int)Math.round((topLeftLatitude - ca[1])/(topLeftLatitude - bottomRightLatitude)*img.getHeight());
+			int xc = (int)Math.round((cp.getPickupLongitude() - topLeftLongitude)/(bottomRightLongitude - topLeftLongitude)*img.getWidth()); 
+			int yc = (int)Math.round((topLeftLatitude - cp.getPickupLatitude())/(topLeftLatitude - bottomRightLatitude)*img.getHeight());
 			
+			boolean pixelDropped=false;
+			boolean somethingWasDrawn=false;
 			for(int x=xc-size/2; x<xc+size/2;x++)
 			{
 				for(int y=yc-size/2; y<yc+size/2;y++)
@@ -278,11 +280,18 @@ public class ClusteringDrawing
 					try
 					{
 						img.setRGB(x, y, color);
+						somethingWasDrawn=true;
 					}
 					catch(ArrayIndexOutOfBoundsException e)
-					{}
+					{
+						pixelDropped = true;
+					}
 				}
 			}
+			if(pixelDropped && somethingWasDrawn)
+				System.out.println("WARNING: center at ("+cp.getPickupLatitude()+" ; \t"+cp.getPickupLongitude()+") didn't completely fit (it is on the edge of the image)");
+			else if(pixelDropped)
+				System.out.println("WARNING: center at ("+cp.getPickupLatitude()+" ; \t"+cp.getPickupLongitude()+") was dropped, out of image area!");
 		}
 		return this;
 	}
