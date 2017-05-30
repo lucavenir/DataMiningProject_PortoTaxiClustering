@@ -383,6 +383,7 @@ public class Kmedian {
      * @return La funzione obbiettivo di ciascun reducer
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
+        /*
         Double[] initialEntry = new Double[l];
         for(Double entry: initialEntry){
             entry = Double.valueOf(0);
@@ -409,12 +410,12 @@ public class Kmedian {
             return phi1;
         });
         
-        return d;
+        return d;*/
         /*
         utilizzo versione con aggregate perché è migliore ma tengo questa per rollback
         */
         
-        /*
+        
         JavaRDD<Double[]> dpartition = dataset.map((point) -> {
             //controllo la distanza di un punto con ogni centro e assegno al migliore
             Double phiPoint[] = new Double[l];
@@ -439,7 +440,7 @@ public class Kmedian {
                 phi1[i] += phi2[i];
             }
             return phi1;
-        });*/
+        });
     }
 
 }
