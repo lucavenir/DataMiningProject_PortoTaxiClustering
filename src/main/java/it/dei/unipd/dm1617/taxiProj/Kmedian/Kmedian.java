@@ -383,7 +383,11 @@ public class Kmedian {
      * @return La funzione obbiettivo di ciascun reducer
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
-                Double[] d = dataset.aggregate(new Double[l], 
+        Double[] initialEntry = new Double[l];
+        for(Double entry: initialEntry){
+            entry = Double.valueOf(0);
+        };
+                Double[] d = dataset.aggregate(initialEntry, 
                 (tempD, point)->{
                     for (int ireducer = 0; ireducer < l; ireducer++) {
                     double min = Position.distance(point, centers[ireducer][0]);
