@@ -23,7 +23,7 @@ public class Kmedian_Cluster {
      *
      * @param dataset dataset già parallelizzato su cui eseguire il map reduce
      */
-    public Kmedian(JavaRDD<Position> dataset) {
+    public Kmedian_Cluster(JavaRDD<Position> dataset) {
         this.dataset = dataset;
         this.n = dataset.count();
     }
@@ -34,7 +34,7 @@ public class Kmedian_Cluster {
      * @param sc context spark su cui applicare il MapReduce
      * @param datasetList lista da usare come dataset
      */
-    public Kmedian(JavaSparkContext sc, List<Position> datasetList) {
+    public Kmedian_Cluster(JavaSparkContext sc, List<Position> datasetList) {
         dataset = sc.parallelize(datasetList);
         n = datasetList.size();
     }
@@ -179,7 +179,7 @@ public class Kmedian_Cluster {
             return new Tuple2((int) (Math.random() * l), point);
         }).cache();
 
-        return getCLARANSCenters(dDataset, k, lmax, 3);
+        return getCLARANSCenters(dDataset, k, l, 3);
     }
 
     /**
@@ -274,7 +274,7 @@ public class Kmedian_Cluster {
         final int lmax = (int) (Math.sqrt(n/k));
         // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
-            return new Tuple2((int) (Math.random() * l), point);
+            return new Tuple2((int) (Math.random() * lmax), point);
         }).cache();
         return getPAMCenters(dDataset, k, lmax);
     }

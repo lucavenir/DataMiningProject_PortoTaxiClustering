@@ -78,7 +78,7 @@ public class Position implements Serializable {
 	}
 	
 	public String toString() {
-		return "[" + pickup_latitude + ", " + pickup_longitude + "]"; 
+		return "[" + pickup_latitude + "," + pickup_longitude + "]"; 
 	}
 	
 	/**
@@ -147,12 +147,18 @@ public class Position implements Serializable {
 	}
 	
 	/**
-	 * Transforms to vector
-	 * @param p
-	 * @return
+	 * Trasforma una posizione in un vettore (X,Y).
+	 * Se ordine=true, l'ordine sara' (LONG, LAT).
+	 * Se ordine=false, l'ordine sara' (LAT, LONG).
+	 * 
+	 * @param Il punto p
+	 * @param L'ordine selezionato
+	 * @return La coppia di coordinate in classe Vector
 	 */
-	public Vector toVector()
-	{
-		return Vectors.dense(getPickupLongitude(), getPickupLatitude());
+	public Vector toVector(boolean ordine) {
+		if (!ordine)
+			return Vectors.dense(getPickupLatitude(), getPickupLongitude());
+		else
+			return Vectors.dense(getPickupLongitude(), getPickupLatitude());
 	}
 }

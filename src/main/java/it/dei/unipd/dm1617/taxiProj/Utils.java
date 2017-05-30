@@ -8,7 +8,6 @@ import org.apache.spark.mllib.clustering.KMeansModel;
 // Import per gestire le strutture dati
 import scala.Tuple2;
 import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.Vectors;
 import java.util.List;
 
 /**
@@ -25,9 +24,27 @@ public class Utils {
 	 * @param p: il punto da trasformare in Vector
 	 * @return il vettore di classe Vector contenente lat e long della classe Position
 	 */
+	
+
+	public static double silhouetteCoefficient (KMeansModel in_clusters, JavaRDD<Position> in_pos) {
+		long point_num = in_pos.count();
 		
-	public static Vector toVector (Position p) {
-		return Vectors.dense(p.getPickupLatitude(), p.getPickupLongitude());
+		
+		return computeA(new Position(), in_clusters, in_pos);
+	}
+	
+	private static double computeA (Position p, KMeansModel in_clusters, JavaRDD<Position> in_pos) {
+		int cluster_index = in_clusters.predict(p.toVector(false));
+		// Calcola la cardinalita' del cluster a cui appartiene p
+		
+		JavaPairRDD<Position, Integer> counting = in_pos.mapToPair((point) -> new Tuple2<Position, Integer>(point, 1));
+		long cardinalita = counting.filter((a) -> {
+			if (in_clusters.predict(a._1().toVector(false)) == cluster_index) return true;
+			else return false;
+		}).reduce((i1, i2) -> new Tuple2<Position, Integer>(null, i1._2()+i2._2()))._2();
+		
+		System.out.println("Cardinalità del cluster " + cluster_index + " = " + cardinalita);
+		return 0.0;
 	}
 	
 	/**
@@ -41,7 +58,6 @@ public class Utils {
 	 * @return Ritorna la coppia:
 	 * (MEDIA,VARIANZA) su: MAX (Distanza(p, ci), con appartenente al cluster Ci), per ogni 1<i<k.
 	 */
-	
 	public static Tuple2<Double, Double> calcolaMaxDistanze (KMeansModel in_clusters, JavaRDD<Position> in_pos) {
 		// Inizializzazione/Dichiarazione delle variabili
 		
@@ -52,17 +68,6 @@ public class Utils {
 		// Catturo i centri dei k cluster
 		Vector[] centers = in_clusters.clusterCenters();
 		
-		// Inizializzo la ricerca di massimo: c'e' una massima distanza per ogni cluster
-		/*
-		max = new Double[k];
-		for (int i=0; i<k; i++)
-			max[i] = 0.0;
-		*/
-		/*
-		// Faccio la stessa cosa, ma per l'argmax: i punti a distanza massima dal loro cluster
-		pmax = new Position[k];
-		*/
-		
 		/*
 		 * Map phase: calcolo la distanza di ogni punto dal suo cluster.
 		 * Chiave: intero che rappresenta l'indice del cluster;
@@ -71,8 +76,9 @@ public class Utils {
 		 * Reduce phase: estraggo il massimo per ogni chiave (cluster).
 		 */
 		
-		JavaPairRDD<Integer, Double> maxdist = in_pos.mapToPair((p) -> {
-			int i = in_clusters.predict(Utils.toVector(p));
+		JavaPairRDD<Integer, Double> index_max_distances = in_pos.mapToPair((p) -> {
+			int i = in_clusters.predict(p.toVector(false));
+
 			return new Tuple2<Integer, Double>(i, Position.distance(p, Utils.toPosition(centers[i])));
 		}).reduceByKey((i, j) -> Double.max(i, j));
 		
@@ -86,7 +92,7 @@ public class Utils {
 		 * cio' giustifica collect()
 		 */
 		
-		List<Tuple2<Integer, Double>> maxdistlist = maxdist.collect();
+		List<Tuple2<Integer, Double>> maxdistlist = index_max_distances.collect();
 		
 		/* 
 		 * Di questa lista/vettore sono solamente interessato alle distanze, perche' ne devo calcolare
@@ -98,13 +104,13 @@ public class Utils {
 		 */
 		double accumulatore_media = 0;
 		double accumulatore_varianza = 0;
-		
 		for (int i=0; i<k; i++) {
 			accumulatore_media += maxdistlist.get(i)._2();
 			accumulatore_varianza += maxdistlist.get(i)._2()*maxdistlist.get(i)._2();
+			System.out.println("Distanza massima del cluster " + maxdistlist.get(i)._1() + ": " + maxdistlist.get(i)._2());
 		}
 		double media = accumulatore_media/k;
-		double devstand = Math.sqrt(accumulatore_varianza/(k-1));
+		double devstand = Math.sqrt((accumulatore_varianza-(k*media))/(k-1));
 		
 		// L'output e' appunto la coppia media/deviazione standard
 		return new Tuple2<Double, Double>(media, devstand);
@@ -114,9 +120,10 @@ public class Utils {
 	/**
 	 * Dato un generico vettore (coppia di numeri, quindi bidimensionale), lo trasforma in una classe Position
 	 * 
-	 * @param v: il vettore da trasformare in Position
-	 * @return un punto
+	 * @param v: il vettore in formato (LAT, LONG) da trasformare in un Position
+	 * @return p: position in formato (LAT, LONG)
 	 */
+	
 	public static Position toPosition(Vector v) {
 		// ATTENZIONE all'ordine, qui!!
 		return new Position (v.apply(1), v.apply(0));

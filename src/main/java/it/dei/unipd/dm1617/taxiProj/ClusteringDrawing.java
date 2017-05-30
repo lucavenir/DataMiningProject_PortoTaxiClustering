@@ -115,7 +115,7 @@ public class ClusteringDrawing
 		if(kmm!=null)
 		{
 			posWithClusters = pos.map((p)->{
-				return new Tuple2<>(kmm.predict(p.toVector()), p);
+				return new Tuple2<>(kmm.predict(p.toVector(true)), p);
 			});
 			clustersNum = kmm.clusterCenters().length;
 		}
@@ -301,7 +301,7 @@ public class ClusteringDrawing
 	{
 		Vector[] centersVec = new Vector[centers.length];
 		for(int i=0;i<centers.length;i++)
-			centersVec[i] = centers[i].toVector();
+			centersVec[i] = centers[i].toVector(true);
 		return drawCenters(r,g,b,a,centersVec,size);
 	}
 }

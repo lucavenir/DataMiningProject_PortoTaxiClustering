@@ -79,12 +79,11 @@ public class Main {
     	//final String dataset = "data_sample.csv";
     	
     	/*
-    	 * @author Venir
-    	 * 
-    	 * Filtro i "%20" e li sostituisce con uno spazio (per ovviare al problema degli spazi nel project path)
+    	 * Filtro i "%20" e li sostituisce con uno spazio
+    	 * (per ovviare al problema degli spazi nel project path)
+    	 * Directory del progetto caricata tramite linea di comando
     	 */
     	
-    	//Directory del progetto caricata tramite linea di comando
     	String projectPath = args[0];
     	//Sostituisco i "%20" con gli spazi
     	projectPath = projectPath.replaceFirst("%20", " ");
@@ -163,7 +162,7 @@ public class Main {
         //System.out.println("Prova: " + positions.partitions().size());
         System.out.println("Numero righe prima clustering: " +  positions.count());
         /*
-         * A questo punto positions e' il ns dataset su cui possiamo applicare l'algoritmo di clsutering
+         * A questo punto positions e' il ns dataset su cui possiamo applicare l'algoritmo di clustering
          * Che si utilizzi il sample o il dataset completo basta riferirsi alla variabile positions
          */
        
@@ -214,7 +213,7 @@ public class Main {
              * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
              */
         	System.out.println("running KMEANS...");
-        	K_meansData = positions.map((p)->p.toVector()).cache();
+        	K_meansData = positions.map((p)->p.toVector(false)).cache(); // Importante: mantenere il parametro a FALSE
             kmeansClusters = KMeans.train(K_meansData.rdd(), k, numIterations);
 	        imagePath="data/images/kmeans.png";
 			Vector[] centri =  kmeansClusters.clusterCenters();
@@ -275,6 +274,7 @@ public class Main {
 	        Timestamp t = new Timestamp (t1-t0);
 	        
 	        // Calcolo dei punti a massima distanza dal centro del loro cluster + Print dei centri
+	        System.out.println("Dimensione del cluster kmeansClusters: " + kmeansClusters.k());
 	        Tuple2<Double, Double> maxdist = Utils.calcolaMaxDistanze(kmeansClusters, positions);
 	        
 	        System.out.println("Media e Dev Standard: " + maxdist._1() + " , " + maxdist._2());
@@ -288,7 +288,7 @@ public class Main {
 	        System.out.println("k=" + k);
 	        System.out.println("K-means space: " + space + " kB");
 	        // E' solo un esempio. Non sara' la distanza che noi dobbiamo minimizzare.	        
-        } 
+        }
         
         
         
