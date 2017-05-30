@@ -385,31 +385,29 @@ public class Kmedian_Cluster {
      * @return La funzione obbiettivo di ciascun reducer
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
-        JavaRDD<Double[]> dpartition = dataset.map((point) -> {
-            //controllo la distanza di un punto con ogni centro e assegno al migliore
-            Double phiPoint[] = new Double[l];
-            for (int ireducer = 0; ireducer < l; ireducer++) {
-                double min = Position.distance(point, centers[ireducer][0]);
-                int best = 0;
-                for (int ik = 1; ik < centers[ireducer].length; ik++) {
-                    double distance = Position.distance(point, centers[ireducer][ik]);
-                    if (distance < min) {
-                        min = distance;
-                        best = ik;
+                Double[] d = dataset.aggregate(new Double[l], 
+                (tempD, point)->{
+                    for (int ireducer = 0; ireducer < l; ireducer++) {
+                    double min = Position.distance(point, centers[ireducer][0]);
+                    int best = 0;
+                    for (int ik = 1; ik < centers[ireducer].length; ik++) {
+                        double distance = Position.distance(point, centers[ireducer][ik]);
+                        if (distance < min) {
+                            min = distance;
+                            best = ik;
+                        }
                     }
+                    tempD[ireducer] = min;
                 }
-                phiPoint[ireducer] = min;
-            }
-
-            return phiPoint;
-        });
-        //ritorna il risultato
-        return dpartition.reduce((phi1, phi2) -> {
+            return tempD;   
+        }, (phi1, phi2) -> {
             for (int i = 0; i < phi1.length; i++) {
                 phi1[i] += phi2[i];
             }
             return phi1;
         });
+        
+        return d;
     }
 
 }
