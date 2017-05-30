@@ -2,6 +2,12 @@ package it.dei.unipd.dm1617.taxiProj;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.SparkSession;
 
+import au.com.bytecode.opencsv.CSVWriter;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -121,5 +127,18 @@ public class InputOutput {
 	    	.createDataset(rdd.rdd(), Position.getEncoder())
 	    	.write()
 	    	.json(path);
-	  }
+	}
+	
+	public static void writeList(List a, String path)  {
+		
+		CSVWriter writer = null;
+		try {
+			writer = new CSVWriter(new FileWriter(path));
+			writer.writeAll(a);
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Problems while writing CSV results file.");
+			e.printStackTrace();
+		}
+	}
 }
