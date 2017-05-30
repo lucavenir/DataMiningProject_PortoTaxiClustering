@@ -9,6 +9,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
+// versione uguale ma devrebbe funzionare meglio se lo lanciamo con un cluster
+
 public class Kmedian {
     private final JavaRDD<Position> dataset; // RDD dataset
     private final long n;                    // dimensione dataset
