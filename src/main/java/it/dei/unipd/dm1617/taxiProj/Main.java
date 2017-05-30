@@ -282,12 +282,14 @@ public class Main {
 	         * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
 	         * Allora tocca "passare" per la classe LocalDateTime che questi metodi li ha. 
 	         */
+	        // Filtro a caso
 	        JavaRDD<Position> position_randomly_filtered = positions.filter((p) -> {
 	        	if (Math.random() < 0.25)
 	        		return true;
 	        	else
 	        		return false;
 	        });
+	        
 	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
 	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
 	        System.out.println("\n\n\n MEDIA, DEV STANDARD: \n" + maxdist._1() + " , " + maxdist._2());
