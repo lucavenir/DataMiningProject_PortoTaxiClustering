@@ -43,7 +43,6 @@ public class Main {
 	private static final int CLARANS = 3;
 	private static final int KMEANS = 4;
 	
-	
     public static void main(String[] args) {
     	/*
     	 * Per configurare correttamente:
@@ -213,7 +212,7 @@ public class Main {
              * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
              */
         	System.out.println("running KMEANS...");
-        	K_meansData = positions.map((p)->p.toVector()).cache(); // Importante: mantenere il parametro a FALSE
+        	K_meansData = positions.map((p)->p.toVector()).cache();
             kmeansClusters = KMeans.train(K_meansData.rdd(), k, numIterations);
 	        imagePath="data/images/kmeans.png";
 			Vector[] centri =  kmeansClusters.clusterCenters();
@@ -277,29 +276,42 @@ public class Main {
 	        System.out.println("Dimensione del cluster kmeansClusters: " + kmeansClusters.k());
 	        Tuple2<Double, Double> maxdist = Utils.calcolaMaxDistanze(kmeansClusters, positions);
 	        
+	        
+	        
+	        /*
+	         *  Piglio un campione casuale, con probabilita' PROB di essere estratto
+	         *  .cache() e' fondamentale per evitare che le operazioni sulle
+	         *  chiamate ddi position_randomly_filtered
+	         *  siano aleatorie come le scelte di sample(...)
+	         */
+	        
+	        /*
+	        JavaRDD<Position> position_randomly_filtered = positions.sample(false, PROB).cache();
+	        
+	        System.out.println("Dimensione del dataset: " + position_randomly_filtered.count());
+	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
+	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
+	        */
+	        System.out.println("\n\n\nMEDIA, DEV STANDARD:\n" + maxdist._1() + " , " + maxdist._2());
+	        System.out.print("K-means time: ");
+	        
 	        /*
 	         * Per qualche strano motivo (che non voglio indagare),
 	         * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
 	         * Allora tocca "passare" per la classe LocalDateTime che questi metodi li ha. 
 	         */
-	        // Filtro a caso
-	        JavaRDD<Position> position_randomly_filtered = positions.filter((p) -> {
-	        	if (Math.random() < 0.00005)
-	        		return true;
-	        	else
-	        		return false;
-	        });
-	        
-	        System.out.println("Dimensione del dataset: " + position_randomly_filtered.count());
-	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
-	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
-	        System.out.println("\n\n\n MEDIA, DEV STANDARD: \n" + maxdist._1() + " , " + maxdist._2());
-	        System.out.println("K-means time: ");
 	        System.out.println(t.toLocalDateTime().getMinute() + " minutes and " + t.toLocalDateTime().getSecond() + " seconds");
 	        System.out.println("k=" + k);
 	        System.out.println("K-means space: " + space + " kB");       
         }
         
+        /* Per definizione Hopkins va fatto SOLO su una piccola
+         * frazione di dataset; allora sfruttiamo un sample casuale:
+         */
+
+        JavaRDD<Position> position_randomly_filtered = positions.sample(false, 0.005).cache();
+        // E stampiamo la misura
+        System.out.println("\n\n\nHopkins: " + Utils.hopkinsStatistic(position_randomly_filtered) + "\n\n\n");
         
         
         
