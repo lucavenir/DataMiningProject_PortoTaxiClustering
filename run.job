@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# Specifico il progetto associato
+#
+#
+# Genera output ed errori nella cartella corrente. 
+# Il file di output sara' test.job.oJOBID
+# quello degli errori sara' invece test.job.eJOBID
+#
+#$ -cwd -m ea 
+#
+# Non redirigo l'output: ogni esecuzione generera'
+# un file di output diverso
+#
+# Voglio ricevere una mail quando il job termina
+# o in caso venga abortito
+#
+#$ -m ea
+
+
+/home/$USER/dataMining/proj/NYC_TaxiProject/gradlew run --debug

@@ -81,8 +81,8 @@ public class Main {
 
     	
     	// Commentare una delle due righe in base al dataset desiderato
-    	//final String dataset = "train.csv";
-    	final String dataset = "data_sample.csv";
+    	final String dataset = "train.csv";
+    	//final String dataset = "data_sample.csv";
     	
     	/*
     	 * Filtro i "%20" e li sostituisce con uno spazio
@@ -196,32 +196,32 @@ public class Main {
 		        switch(alg)
 		        {
 		        case PAM:
-		        	System.out.println("Running PAM...");
+		        	System.out.println("Running PAM (k="+k+")...");
 			        centers = a.getPAMCenters(k, l);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
-			        imagePath="data/images/kmedianPAM.png";
+			        imagePath="data/images/kmedianPAM"+k+".png";
 		        	break;
 		        case CLARA:
-		        	System.out.println("Running CLARA...");
+		        	System.out.println("Running CLARA (k="+k+")...");
 			        centers = a.getCLARACenters(k, l);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
-			        imagePath="data/images/kmedianCLARA.png";
+			        imagePath="data/images/kmedianCLARA"+k+".png";
 		        	break;
 		        case CLARAFAST:
-		        	System.out.println("Running CLARAFAST...");
+		        	System.out.println("Running CLARAFAST (k="+k+")...");
 			        centers = a.getCLARAFASTCenters(k);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
-			        imagePath="data/images/kmedianCLARAFAST.png";
+			        imagePath="data/images/kmedianCLARAFAST"+k+".png";
 		        	break;
 		        case CLARANS:
-		        	System.out.println("Running CLARANS...");
+		        	System.out.println("Running CLARANS (k="+k+")...");
 			        centers = a.getCLARANSCenters(k);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
-			        imagePath="data/images/kmedianCLARANS.png";
+			        imagePath="data/images/kmedianCLARANS"+k+".png";
 		        	break;
 		        case KMEANS:
 		        	/*
@@ -231,13 +231,13 @@ public class Main {
 		               planari e non considerano il fatto che la reale distanza dipenda anche dalla curva della terra.
 		             * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
 		             */
-		        	System.out.println("Running KMEANS...");
+		        	System.out.println("Running KMEANS (k="+k+")...");
 		        	K_meansData = positions.map((p)->p.toVector()).cache(); // Importante: mantenere il parametro a FALSE
 		        	
 		        	// Allena il modello
 		            kmeansClusters = KMeans.train(K_meansData.rdd(), k, numIterations);
 		            // Path salvataggio immagine
-			        imagePath="data/images/kmeans.png";
+			        imagePath="data/images/kmeans"+k+".png";
 			        
 			        // Conversione per utilizzare la objective function di kmedian
 					Vector[] centri =  kmeansClusters.clusterCenters();
