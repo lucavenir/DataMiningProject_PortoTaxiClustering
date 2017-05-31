@@ -13,6 +13,8 @@ import org.apache.spark.api.java.function.Function;
 
 // Import per il servizio Timestamp
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 // Import per K means
 import org.apache.spark.mllib.clustering.KMeans;
@@ -42,6 +44,11 @@ public class Main {
 	private static final int CLARAFAST = 2;
 	private static final int CLARANS = 3;
 	private static final int KMEANS = 4;
+	
+	private static final double IMAGE_MIN_LAT = 41.05;
+	private static final double IMAGE_MAX_LAT = 41.35;
+	private static final double IMAGE_MIN_LONG = -8.7;
+	private static final double IMAGE_MAX_LONG = -8.4;
 	
     public static void main(String[] args) {
     	/*
@@ -145,7 +152,8 @@ public class Main {
         System.out.println("drawing positions...");
         try
         {
-        	new ClusteringDrawing(2000,2000).setLimits(41.35, -8.7, 41.05, -8.4).setAlfa(0.8).
+        	new ClusteringDrawing(2000,2000).setAlfa(0.8).
+        		setLimits(IMAGE_MAX_LAT, IMAGE_MIN_LONG, IMAGE_MIN_LAT, IMAGE_MAX_LONG).
 				draw(positions, null, null).
 				save("data/images/completeDataset.png");
         }
@@ -168,82 +176,112 @@ public class Main {
         JavaRDD<Vector> K_meansData = null; //viene inizializzato dopo, nello switch
         
         int numIterations = 60;
-        int k = 10;
-        int alg = KMEANS;
+        
+        int alg;
         
         String imagePath = null;
         Position[] centers = null;
         Kmedian a = new Kmedian(positions);
         KMeansModel kmeansClusters= null;
-        int l = 4;	     
-        long t0 = System.nanoTime();
-        switch(alg)
-        {
-        case PAM:
-        	System.out.println("running PAM...");
-	        centers = a.getPAMCenters(k, l);
-	        System.out.println(a.objectiveFunction(centers));
-	        imagePath="data/images/kmedianPAM.png";
-        	break;
-        case CLARA:
-        	System.out.println("running CLARA...");
-	        centers = a.getCLARACenters(k, l);
-	        System.out.println(a.objectiveFunction(centers));
-	        imagePath="data/images/kmedianCLARA.png";
-        	break;
-        case CLARAFAST:
-        	System.out.println("running CLARAFAST...");
-	        centers = a.getCLARAFASTCenters(k);
-	        System.out.println(a.objectiveFunction(centers));
-	        imagePath="data/images/kmedianCLARAFAST.png";
-        	break;
-        case CLARANS:
-        	System.out.println("running CLARANS...");
-	        centers = a.getCLARANSCenters(k);
-	        System.out.println(a.objectiveFunction(centers));
-	        imagePath="data/images/kmedianCLARANS.png";
-        	break;
-        case KMEANS:
-        	/*
-             * Crea un clustering k means
-             * Da ricordare che K-means sfrutta la distanza euclidea L2 e non avrebbe senso usare un'altra metrica.
-               Quindi i punti vengono considerati come
-               planari e non considerano il fatto che la reale distanza dipenda anche dalla curva della terra.
-             * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
-             */
-        	System.out.println("running KMEANS...");
-        	K_meansData = positions.map((p)->p.toVector()).cache();
-            kmeansClusters = KMeans.train(K_meansData.rdd(), k, numIterations);
-	        imagePath="data/images/kmeans.png";
-			Vector[] centri =  kmeansClusters.clusterCenters();
-			centers = new Position[centri.length];
-			for (int i = 0; i < centri.length; i++) {
-				centers[i] = new Position(centri[i].apply(0), centri[i].apply(1));
-			}
-			System.out.println("Objective Function: " +  a.objectiveFunction(centers));
-            break;
+        int l = 4;
+        
+        List<String[]> results = new ArrayList<String[]>();
+        for (int k = 10; k < 12; k++) {
+	        String[] resultK = new String[11];
+	        for (int j = 0; j < 5; j++) {
+	        	alg = j;
+		        long t0 = System.nanoTime();
+		        double objFnc = 0;
+		        
+		        switch(alg)
+		        {
+		        case PAM:
+		        	System.out.println("Running PAM...");
+			        centers = a.getPAMCenters(k, l);
+			        objFnc = a.objectiveFunction(centers);
+					System.out.println("Objective Function: " + objFnc);
+			        imagePath="data/images/kmedianPAM.png";
+		        	break;
+		        case CLARA:
+		        	System.out.println("Running CLARA...");
+			        centers = a.getCLARACenters(k, l);
+			        objFnc = a.objectiveFunction(centers);
+					System.out.println("Objective Function: " + objFnc);
+			        imagePath="data/images/kmedianCLARA.png";
+		        	break;
+		        case CLARAFAST:
+		        	System.out.println("Running CLARAFAST...");
+			        centers = a.getCLARAFASTCenters(k);
+			        objFnc = a.objectiveFunction(centers);
+					System.out.println("Objective Function: " + objFnc);
+			        imagePath="data/images/kmedianCLARAFAST.png";
+		        	break;
+		        case CLARANS:
+		        	System.out.println("Running CLARANS...");
+			        centers = a.getCLARANSCenters(k);
+			        objFnc = a.objectiveFunction(centers);
+					System.out.println("Objective Function: " + objFnc);
+			        imagePath="data/images/kmedianCLARANS.png";
+		        	break;
+		        case KMEANS:
+		        	/*
+		             * Crea un clustering k means
+		             * Da ricordare che K-means sfrutta la distanza euclidea L2 e non avrebbe senso usare un'altra metrica.
+		               Quindi i punti vengono considerati come
+		               planari e non considerano il fatto che la reale distanza dipenda anche dalla curva della terra.
+		             * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
+		             */
+		        	System.out.println("Running KMEANS...");
+		        	K_meansData = positions.map((p)->p.toVector()).cache(); // Importante: mantenere il parametro a FALSE
+		        	
+		        	// Allena il modello
+		            kmeansClusters = KMeans.train(K_meansData.rdd(), k, numIterations);
+		            // Path salvataggio immagine
+			        imagePath="data/images/kmeans.png";
+			        
+			        // Conversione per utilizzare la objective function di kmedian
+					Vector[] centri =  kmeansClusters.clusterCenters();
+					centers = new Position[centri.length];
+					for (int i = 0; i < centri.length; i++) {
+						centers[i] = new Position(centri[i].apply(0), centri[i].apply(1));
+					}
+					
+			        objFnc = a.objectiveFunction(centers);
+					System.out.println("Objective Function: " + objFnc);
+		            break;
+		        }
+		        long t1 = System.nanoTime();
+		        long time_ms = (t1-t0)/1000_000;
+		        
+		        System.out.println("clustering completed (" + time_ms +" ms)");
+		        resultK[j * 2] = "" +  objFnc;
+		        resultK[j * 2 + 1] = "" + time_ms;
+		        
+	        }
+	        resultK[10] = "" + k;
+	        results.add(resultK);
         }
-        long t1 = System.nanoTime();
-        System.out.println("clustering completed ("+(t1-t0)/1000_000+"ms)");
-
-
-        //DISEGNA
         
+        String path = "result.csv";
         
+        InputOutput.writeList(results, path);
+        //DISEGNA        
         long draw_t0 = System.nanoTime();
         System.out.println("drawing positions...");
-        try
+        /*try
         {
         	if(alg==KMEANS)
         	{
-        		new ClusteringDrawing(2000,2000).setAlfa(0.6).setLimits(41.35, -8.7, 41.05, -8.4).
+        		new ClusteringDrawing(2000,2000).setAlfa(0.6).
+        			setLimits(IMAGE_MAX_LAT, IMAGE_MIN_LONG, IMAGE_MIN_LAT, IMAGE_MAX_LONG).
 					draw(positions, kmeansClusters, null, false).
 					drawCenters(1, 1, 1, 1, kmeansClusters.clusterCenters(), 10).
 					save(imagePath);
         	}
         	else
         	{
-	        	new ClusteringDrawing(2000,2000).setAlfa(0.6).setLimits(41.35, -8.7, 41.05, -8.4).
+	        	new ClusteringDrawing(2000,2000).setAlfa(0.6).
+	        		setLimits(IMAGE_MAX_LAT, IMAGE_MIN_LONG, IMAGE_MIN_LAT, IMAGE_MAX_LONG).
 					draw(a.partitionAsRDD(centers),centers.length,null,false).
 					drawCenters(1, 1, 1, 1, centers, 10).
 					save(imagePath);
@@ -256,9 +294,9 @@ public class Main {
         }
         long draw_t1 = System.nanoTime();
         System.out.println("done ("+((draw_t1-draw_t0)/1000000)+"ms)");
+        */
         
-        
-        if(alg==KMEANS)
+        /*if(alg==KMEANS)
         {
 	        
 	        // Misuro lo spazio occupato dal clustering (in totale e in kB)
@@ -269,8 +307,8 @@ public class Main {
 	        /*
 	         * Creo un'istanza di Timestamp da end-init: viene creata una data-ora (che sarà vicina a 00:00 del 1/1/1970);
 	         * Serve per stampare minuti/secondi dell'esecuzione del clustering
-	         */
-	        Timestamp t = new Timestamp (t1-t0);
+	         *
+	        //Timestamp t = new Timestamp (t1-t0);
 	        
 	        // Calcolo dei punti a massima distanza dal centro del loro cluster + Print dei centri
 	        System.out.println("Dimensione del cluster kmeansClusters: " + kmeansClusters.k());
@@ -292,18 +330,20 @@ public class Main {
 	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
 	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
 	        */
-	        System.out.println("\n\n\nMEDIA, DEV STANDARD:\n" + maxdist._1() + " , " + maxdist._2());
-	        System.out.print("K-means time: ");
+	        //System.out.println("\n\nMedia e Dev Standard: " + maxdist._1() + " , " + maxdist._2());
+	        //System.out.print("K-means time: ");
 	        
 	        /*
 	         * Per qualche strano motivo (che non voglio indagare),
 	         * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
 	         * Allora tocca "passare" per la classe LocalDateTime che questi metodi li ha. 
 	         */
+	         /*
 	        System.out.println(t.toLocalDateTime().getMinute() + " minutes and " + t.toLocalDateTime().getSecond() + " seconds");
 	        System.out.println("k=" + k);
-	        System.out.println("K-means space: " + space + " kB");       
-        }
+	        System.out.println("K-means space: " + space + " kB");
+	        //E' solo un esempio. Non sara' la distanza che noi dobbiamo minimizzare.	        
+        }*/
         
         /* Per definizione Hopkins va fatto SOLO su una piccola
          * frazione di dataset; allora sfruttiamo un sample casuale:
