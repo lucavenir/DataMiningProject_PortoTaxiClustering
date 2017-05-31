@@ -106,7 +106,25 @@ public class Utils {
 		double somma = 0;
 		
 		// Init per determinare le partizioni degli input
-		//int k = input_clusters.k();
+		int k = input_clusters.k();
+		
+		/*
+		 * PRE-INIT PHASE:
+		 * 
+		 * Splitto (A CASO) il dataset; uso dei pesi uguali per tutti e k gli split che eseguirò
+		 * Nota bene: questo split e' fittizio.
+		 * Non me ne frega niente dei punti che ci sono al loro interno.
+		 * Le celle di questi vettori di RDD verranno sovrascritte... see below
+		 */
+		double weights[] = new double[k];
+
+		for(int j=0; j<k; j++)
+			weights[j] = 100000;
+
+		// Ancora inizializzazioni...
+		JavaRDD<Position> in_cluster[] = in_pos.randomSplit(weights);
+		JavaRDD<Position> non_in_cluster[] = in_pos.randomSplit(weights);
+		long in_cluster_length[] = new long[k];
 		
 		/*
 		 * INIT PHASE:
@@ -115,31 +133,19 @@ public class Utils {
 		 * quest'operazione può sembrare bruttina, ma se funziona ci fa risparmiare
 		 * un sacco di iterazioni e potrebbe rendere il calcolo di silhouette fattibile
 		 * 
-		 * Di questi dataset voglio catturarne la cardinalita' (for future use)
+		 * Di questi dataset voglio catturarne anche la cardinalita' (for future use)
 		 */
-		//List<JavaRDD<Position>> in_cluster = Arrays.asList(in_pos.filter((p) -> (input_clusters.predict(p.toVector())==0)));
-		//List<JavaRDD<Position>> non_in_cluster = Arrays.asList(in_pos.subtract(in_cluster.get(0)));
-		//long in_cluster_length[] = new long[k];
-		//in_cluster_length[0] = in_cluster.get(0).count();
+		for(i=0; i<k; i++) {
+			in_cluster[i] = in_pos
+					.filter((p) -> (input_clusters.predict(p.toVector())==i))
+					.cache(); // Se non lo metto, in_cluster risulta vuoto una volto uscito dal ciclo. PERCHE?!
+			non_in_cluster[i] = in_pos.subtract(in_cluster[i]);
+			in_cluster_length[i] = in_cluster[i].count();
+		}
 		
-		/*
-		 *  Se c'e' piu' di un cluster (cosa auspicabile), allora creo altri dataset simili a quelli sopra.
-		 *  Ovvero alla fine del for avro' k JavaRDD contenenti i punti, "aggregati" per cluster
-		 *  Ne avro' altri k che contengono tutti i punti tranne quelli in uno specifico cluster
-		 *  
-		 *  Infine, avro' le cardinalita' di tali dataset (mi servono per il calcolo di ap, bp)
-		 */
-		//for(i=1; i<k; i++) {
-		//	in_cluster.add(in_pos.filter((p) -> (input_clusters.predict(p.toVector())==i)));
-		//	non_in_cluster.add(in_pos.subtract(in_cluster.get(i)));
-		//	in_cluster_length[i] = in_cluster.get(i).count();
-		//	System.out.println("Dimensione attuale degli array: " + in_cluster.size() + ", " + non_in_cluster.size());
-		//	System.out.println("Cardinalita' del cluster i-esimo: " + in_cluster_length[i]);
-		//}
-		//System.exit(0);
 		for (Position p : in_pos.collect()) {
 			// Catturo l'indice del cluster al quale appartiene p
-			//int p_index = input_clusters.predict(p.toVector());
+			int p_index = input_clusters.predict(p.toVector());
 
 			/*
 			 * --- CALCOLO DEL PARAMETRO bp ---
@@ -151,8 +157,8 @@ public class Utils {
 			 * Valore: Proprio la distanza(p,j)
 			 * 
 			 * Reduce BY-KEY phase: sommo le distanze appartenenti alla stessa chiave ("BY-KEY").
-			 *//*
-			JavaPairRDD<Integer, Double> index_sum_dist = non_in_cluster.get(p_index)
+			 */
+			JavaPairRDD<Integer, Double> index_sum_dist = non_in_cluster[p_index]
 					.mapToPair((j) -> {
 						// .predict() ritorna l'indice del cluster al quale appartiene il punto in input
 						int i = input_clusters.predict(j.toVector());
@@ -177,6 +183,7 @@ public class Utils {
 			// Per def di bp: min fratto la cardinalita' dell'insieme che contiene p
 			double bp = min/in_cluster_length[p_index];
 			
+			
 			/*
 			 * --- CALCOLO DEL PARAMETRO ap ---
 			 * 
@@ -185,19 +192,20 @@ public class Utils {
 			 * appartenente al cluster del punto p.
 			 * 
 			 * Reduce phase: sommo tali distanze.
-			 *//*
-			Double somma_distanze= in_cluster.get(p_index)
+			 */
+
+			Double somma_distanze = in_cluster[p_index]
 					.map((j) -> Position.distance(j, p)) // Map phase: Per ogni punto j che appartiene al cluster di P, calcolo la distanza
 					.reduce((a,b) -> a+b); 				// Reduce phase: Eseguo la somma di tutte le distanze sopra ottenute
 			
 			// Per def di ap: media delle distanze (j,p) del cluster al quale appartiene p
-			double ap = somma_distanze / in_cluster_length[p_index];
+			double ap = somma_distanze/in_cluster_length[p_index];
 			
 			/*
 			 * --- CALCOLO DEL PARAMETRO max ---
 			 * 
 			 * Definito come appuntom assimo tra ap e bp
-			 *//*
+			 */
 			double max = Double.max(ap, bp);
 			
 			/*
@@ -207,9 +215,10 @@ public class Utils {
 			 * Quindi, accumulo la somma qui e dividero' per il totale poi.
 			 */
 			
-			double ap = computeA(p, input_clusters, in_pos);
-			double bp = computeB(p, input_clusters, in_pos);
-			double max = Double.max(ap, bp);
+			
+			//double ap = computeA(p, input_clusters, in_pos);
+			//double bp = computeB(p, input_clusters, in_pos);
+			//double max = Double.max(ap, bp);
 			
 			somma += (bp-ap)/max;
 		}

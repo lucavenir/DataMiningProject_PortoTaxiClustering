@@ -81,8 +81,8 @@ public class Main {
 
     	
     	// Commentare una delle due righe in base al dataset desiderato
-    	final String dataset = "train.csv";
-    	//final String dataset = "data_sample.csv";
+    	//final String dataset = "train.csv";
+    	final String dataset = "data_sample.csv";
     	
     	/*
     	 * Filtro i "%20" e li sostituisce con uno spazio
@@ -177,7 +177,7 @@ public class Main {
         
         int numIterations = 60;
         
-        int alg;
+        int alg = 0;
         
         String imagePath = null;
         Position[] centers = null;
@@ -268,7 +268,7 @@ public class Main {
         //DISEGNA        
         long draw_t0 = System.nanoTime();
         System.out.println("drawing positions...");
-        /*try
+        try
         {
         	if(alg==KMEANS)
         	{
@@ -294,7 +294,7 @@ public class Main {
         }
         long draw_t1 = System.nanoTime();
         System.out.println("done ("+((draw_t1-draw_t0)/1000000)+"ms)");
-        */
+        
         
         /*if(alg==KMEANS)
         {
@@ -324,12 +324,12 @@ public class Main {
 	         */
 	        
 	        /*
-	        JavaRDD<Position> position_randomly_filtered = positions.sample(false, PROB).cache();
+	        JavaRDD<Position> position_randomly_filtered = positions.sample(false, 0.005).cache();
 	        
 	        System.out.println("Dimensione del dataset: " + position_randomly_filtered.count());
 	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
 	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
-	        */
+	        
 	        //System.out.println("\n\nMedia e Dev Standard: " + maxdist._1() + " , " + maxdist._2());
 	        //System.out.print("K-means time: ");
 	        
@@ -349,9 +349,8 @@ public class Main {
          * frazione di dataset; allora sfruttiamo un sample casuale:
          */
 
-        JavaRDD<Position> position_randomly_filtered = positions.sample(false, 0.005).cache();
         // E stampiamo la misura
-        System.out.println("\n\n\nHopkins: " + Utils.hopkinsStatistic(position_randomly_filtered) + "\n\n\n");
+        //System.out.println("\n\n\nHopkins: " + Utils.hopkinsStatistic(position_randomly_filtered) + "\n\n\n");
         
         
         
