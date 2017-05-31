@@ -236,7 +236,8 @@ public class ClusteringDrawing
 	public void save(String path) throws IOException
 	{
 		File outputfile = new File(path);
-        ImageIO.write(img, "png", outputfile);
+		outputfile.getParentFile().mkdirs();
+       		ImageIO.write(img, "png", outputfile);
 	}
 
 	/**
