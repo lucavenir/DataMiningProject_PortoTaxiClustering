@@ -13,6 +13,7 @@ import org.apache.spark.api.java.function.Function;
 
 // Import per il servizio Timestamp
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -196,28 +197,28 @@ public class Main {
 		        switch(alg)
 		        {
 		        case PAM:
-		        	System.out.println("Running PAM (k="+k+")...");
+		        	System.out.println("Running PAM (k="+k+", started at "+LocalDateTime.now()+")...");
 			        centers = a.getPAMCenters(k, l);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
 			        imagePath="data/images/kmedianPAM"+k+".png";
 		        	break;
 		        case CLARA:
-		        	System.out.println("Running CLARA (k="+k+")...");
+		        	System.out.println("Running CLARA (k="+k+", started at "+LocalDateTime.now()+")...");
 			        centers = a.getCLARACenters(k, l);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
 			        imagePath="data/images/kmedianCLARA"+k+".png";
 		        	break;
 		        case CLARAFAST:
-		        	System.out.println("Running CLARAFAST (k="+k+")...");
+		        	System.out.println("Running CLARAFAST (k="+k+", started at "+LocalDateTime.now()+")...");
 			        centers = a.getCLARAFASTCenters(k);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
 			        imagePath="data/images/kmedianCLARAFAST"+k+".png";
 		        	break;
 		        case CLARANS:
-		        	System.out.println("Running CLARANS (k="+k+")...");
+		        	System.out.println("Running CLARANS (k="+k+", started at "+LocalDateTime.now()+")...");
 			        centers = a.getCLARANSCenters(k);
 			        objFnc = a.objectiveFunction(centers);
 					System.out.println("Objective Function: " + objFnc);
@@ -231,7 +232,7 @@ public class Main {
 		               planari e non considerano il fatto che la reale distanza dipenda anche dalla curva della terra.
 		             * Nell'implementazione dell'algoritmo PAM, possiamo invece utilizzare la nostra distanza.
 		             */
-		        	System.out.println("Running KMEANS (k="+k+")...");
+		        	System.out.println("Running KMEANS (k="+k+", started at "+LocalDateTime.now()+")...");
 		        	K_meansData = positions.map((p)->p.toVector()).cache(); // Importante: mantenere il parametro a FALSE
 		        	
 		        	// Allena il modello
