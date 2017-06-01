@@ -93,13 +93,12 @@ public class Kmedian {
      *
      * @param k n# di cluster voluti
      * @param l n# di reducer voluti; deve essere compreso tra [0,&radic;n]
-     * altrimenti il valore viene ignorato
      * @return Array di k centri
      */
     public Position[] getCLARACenters(int k, final int l) {
         if (l >= lmax || l < 0) {
             //ignoro l se troppo grande
-            return getCLARACenters(k);
+            throw new RuntimeException("Bad l value: "+l);
         } else {
             // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
             JavaPairRDD<Integer, Position> dDataset = dataset.sample(false, l / Math.sqrt(n)).mapToPair((point) -> {
@@ -137,6 +136,37 @@ public class Kmedian {
         return medoids[best];
     }
 
+     /**
+     * Calcola i centri per un k-clustering mediante CLARA.<br/>
+     *
+     * @param k n# di cluster voluti
+     * @param sample_size grandezza di una sample
+     * @param nSample n# di sample
+     * @return Array di k centri
+     */
+    public Position[] getCLARACenters(int k, int sample_size, int l) {
+        if ( sample_size >= n || sample_size < 0){
+            throw new RuntimeException("Bad sample_size value: "+sample_size);
+        }
+        if (l < 0){
+            throw new RuntimeException("Bad l value: "+l);
+        }
+
+        // recupero dal dataset lo SparkContext (viene usato solo per questo metodo, inutile memorizzarlo come variabile della classe)
+        JavaSparkContext sc = new JavaSparkContext(dataset.context());
+        // prendo una sample di esattamente l*sample_size elementi
+        List<Position> t = dataset.takeSample(true, sample_size * l);
+        
+        //parallellizzo la sample dividendo gli elementi equamente tra i reducer
+        ArrayList<Tuple2<Integer, Position>> toSample = new ArrayList();
+        for (int i = 0; i < t.size(); i++) {
+            toSample.add(new Tuple2((i % l), t.get(i)));
+        }
+        JavaPairRDD<Integer, Position> sample = sc.parallelizePairs(toSample).cache();
+
+        return getCLARACenters(sample, k, l);
+    }
+    
     /**
      * Calcola i centri per un k-clustering mediante CLARA.<br/>
      * Utilizzando solo l=5 e una sample di grandezza 40+2k per ogni reducer
@@ -198,10 +228,10 @@ public class Kmedian {
      */
     public Position[] getCLARANSCenters(int k, final int l, int nlocal) {
         if (nlocal < 2 || nlocal > 5) {
-            nlocal = 3;
+            throw new RuntimeException("Bad nlocal value: "+nlocal);
         }
         if (l > lmax || l < 0) {
-            return getCLARANSCenters(k);
+            throw new RuntimeException("Bad l value: "+l);
         }
         // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.sample(false, l / Math.sqrt(n)).mapToPair((point) -> {
@@ -249,7 +279,7 @@ public class Kmedian {
      */
     public Position[] getPAMCenters(int k, final int l) {
         if (l > lmax || l < 0) {
-            return getPAMCenters(k);
+            throw new RuntimeException("Bad l value: "+l);        
         } else {
             // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
             JavaPairRDD<Integer, Position> dDataset = dataset.sample(false, l / Math.sqrt(n)).mapToPair((point) -> {
