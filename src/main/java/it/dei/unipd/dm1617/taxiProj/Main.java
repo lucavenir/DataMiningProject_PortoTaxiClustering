@@ -73,10 +73,6 @@ public class Main {
     	 * Per utilizzare il dataset completo, scaricare il file a questo link:
     	 * https://archive.ics.uci.edu/ml/machine-learning-databases/00339/train.csv.zip
     	 * Spacchettare e mettere nella cartella data il file train.csv
-    	 * ATTENZIONE:
-    	 * la prima riga del file train.csv deve essere sostituita con la prima riga contenuta
-    	 * nel file data_sample.csv 
-    	 * SENZA utilizzare excel, ma con un editor di testo
     	 */
     	
 
@@ -92,27 +88,19 @@ public class Main {
     	 */
     	
     	String projectPath = args[0];
-    	//Sostituisco i "%20" con gli spazi
     	projectPath = projectPath.replaceFirst("%20", " ");
 
-    	// Struttura dati per il clustering
-    	JavaRDD<Position> positions;
 
+        /*
+         * Per utenti windows, scaricare il file winutils.exe da internet e metterlo nella cartella bin
+         * Su linux pare non influire, qualunque cosa si imposti
+         */
+        System.setProperty("hadoop.home.dir", projectPath);
+        
     	// Imposta spark
     	SparkConf sparkConf = new SparkConf(true)
     							.setAppName("Data parser and clustering");
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
-        
-
-       
-        int numPartitions = sc.defaultParallelism();
-        System.out.println("Numero di partizioni: " + numPartitions);
-        
-        /*
-         * Per utenti windows, scaricare il file winutils.exe da internet e metterlo nella cartella bin
-         * Su linux pare non influire, qualunque cosa ci sia
-         */
-        System.setProperty("hadoop.home.dir", projectPath);
         
         SparkSession ss = new SparkSession(sc.sc());
         
@@ -123,6 +111,9 @@ public class Main {
          * temporaneamente
          */
         
+    	// Struttura dati per il clustering
+    	JavaRDD<Position> positions;
+    	
         System.out.println("loading dataset...");
         if (dataset.contains("train")) {
 	        Path dataPath = Paths.get(projectPath, "/data/trainFiltered");
@@ -134,8 +125,7 @@ public class Main {
 	        else
 	        {
 	        	// Leggi il dataset
-	        	positions = InputOutput.readOriginalDataset(ss, projectPath + "/data/" + dataset);
-	        	
+	        	positions = InputOutput.readOriginalDataset(ss, projectPath + "/data/" + dataset);	        	
 	        	// Salva per future esecuzioni
 	        	InputOutput.write(positions, projectPath + "/data/trainFiltered");
 	        }

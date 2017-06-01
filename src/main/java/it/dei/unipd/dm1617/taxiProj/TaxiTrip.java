@@ -20,25 +20,26 @@ public class TaxiTrip implements Serializable {
 	
 	private static final long serialVersionUID = 3624912097292787083L;
 		
-	private String tripId;
-	private String callType;
-	private String originCall;
-	private String originStand;
-	private String taxiId;
-	private String timestamp;
-	private String dayType;
-	private String missingData;
-	private String polyline;
+
+	private String TRIP_ID;
+	private String CALL_TYPE;
+	private String ORIGIN_CALL;
+	private String ORIGIN_STAND;
+	private String TAXI_ID;
+	private String TIMESTAMP;
+	private String DAY_TYPE;
+	private String MISSING_DATA;
+	private String POLYLINE;
 	
 	public TaxiTrip() {
-		tripId = "";
+	/*	tripId = "";
 		callType = "";
 		originCall = "";
 		taxiId = "";
 		timestamp = "";
 		dayType = "";
 		missingData = "";
-		polyline = "";
+		polyline = "";*/
 	}
 	/*
 	public TaxiTrip(long id,
@@ -78,76 +79,76 @@ public class TaxiTrip implements Serializable {
 		return Encoders.bean(TaxiTrip.class);
 	}
 	
-	public String getTripId() {
-		return tripId;
+	public String getTRIP_ID() {
+		return TRIP_ID;
 	}
 
-	public void setTripId(String id) {
-		this.tripId = id;
+	public void setTRIP_ID(String id) {
+		this.TRIP_ID = id;
 	}	
 	
-	public String getCallType() {
-		return callType;
+	public String getCALL_TYPE() {
+		return CALL_TYPE;
 	}
 
-	public void setCallType(String callType) {
-		this.callType = callType;
+	public void setCALL_TYPE(String callType) {
+		this.CALL_TYPE = callType;
 	}
 	
-	public String getOriginCall() {
-		return originCall;
+	public String getORIGIN_CALL() {
+		return ORIGIN_CALL;
 	}
 
-	public void setOriginCall(String originCall) {
-		this.originCall = originCall;
+	public void setORIGIN_CALL(String originCall) {
+		this.ORIGIN_CALL = originCall;
 	}
 
-	public String getOriginStand() {
-		return originStand;
+	public String getORIGIN_STAND() {
+		return ORIGIN_STAND;
 	}
 
-	public void setOriginStand(String originStand) {
-		this.originStand = originStand;
+	public void setORIGIN_STAND(String originStand) {
+		this.ORIGIN_STAND = originStand;
 	}
 
-	public String getTaxiId() {
-		return taxiId;
+	public String getTAXI_ID() {
+		return TAXI_ID;
 	}
 
-	public void setTaxiId(String taxiID) {
-		this.taxiId = taxiID;
+	public void setTAXI_ID(String taxiID) {
+		this.TAXI_ID = taxiID;
 	}
 
-	public String getTimestamp() {
-		return timestamp;
+	public String getTIMESTAMP() {
+		return TIMESTAMP;
 	}
 
-	public void setTimestamp(String timestamp) {
-		this.timestamp = timestamp;
+	public void setTIMESTAMP(String timestamp) {
+		this.TIMESTAMP = timestamp;
 	}
 
-	public String getDayType() {
-		return dayType;
+	public String getDAY_TYPE() {
+		return DAY_TYPE;
 	}
 
-	public void setDayType(String dayType) {
-		this.dayType = dayType;
+	public void setDAY_TYPE(String dayType) {
+		this.DAY_TYPE = dayType;
 	}
 
-	public String getMissingData() {
-		return missingData;
+	public String getMISSING_DATA() {
+		return MISSING_DATA;
 	}
 
-	public void setMissingData(String missingData) {
-		this.missingData = missingData;
+	public void setMISSING_DATA(String missingData) {
+		this.MISSING_DATA = missingData;
 	}
 
-	public String getPolyline() {
-		return polyline;
+	public String getPOLYLINE() {
+		return POLYLINE;
 	}
 
-	public void setPolyline(String polyline) {
-		this.polyline = polyline;
+	public void setPOLYLINE(String polyline) {
+		this.POLYLINE = polyline;
 	}
 	
 	public String toString() {
