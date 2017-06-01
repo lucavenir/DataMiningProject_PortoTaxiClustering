@@ -347,7 +347,7 @@ public class Utils {
 			int i = in_clusters.predict(p.toVector());
 			
 			// Creo la tupla (indice, distanza dal centro)
-			return new Tuple2<Integer, Double>(i, Position.distance(p, Utils.toPosition(centers[i])));
+			return new Tuple2<Integer, Double>(i, Position.distance(p, new Position(centers[i])));
 		}).reduceByKey((i, j) -> Double.max(i, j));
 		
 		/*
@@ -385,17 +385,4 @@ public class Utils {
 		return new Tuple2<Double, Double>(media, devstand);
 		
 	}
-	
-	/**
-	 * Dato un generico vettore (coppia di numeri, quindi bidimensionale), lo trasforma in una classe Position
-	 * 
-	 * @param v: il vettore in formato (LAT, LONG) da trasformare in un Position
-	 * @return p: position in formato (LAT, LONG)
-	 */
-	
-	public static Position toPosition(Vector v) {
-		// ATTENZIONE all'ordine, qui!!
-		return new Position (v.apply(0), v.apply(1));
-	}
-	
 }

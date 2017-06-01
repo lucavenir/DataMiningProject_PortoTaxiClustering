@@ -189,7 +189,8 @@ public class Main {
         List<String[]> results = new ArrayList<String[]>();
         for (int k = 10; k < 12; k++) {
 	        String[] resultK = new String[11];
-	        for (int j = 0; j < 5; j++) {
+	        for (int j = 0; j < 5; j++)
+	        {
 	        	alg = j;
 		        long t0 = System.nanoTime();
 		        double objFnc = 0;
