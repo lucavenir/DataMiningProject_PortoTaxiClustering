@@ -141,30 +141,30 @@ public class Kmedian {
      *
      * @param k n# di cluster voluti
      * @param sample_size grandezza di una sample
-     * @param nSample n# di sample
+     * @param n_sample n# di sample
      * @return Array di k centri
      */
-    public Position[] getCLARACenters(int k, int sample_size, int l) {
+    public Position[] getCLARACenters(int k, int sample_size, int n_sample) {
         if ( sample_size >= n || sample_size < 0){
             throw new RuntimeException("Bad sample_size value: "+sample_size);
         }
-        if (l < 0){
-            throw new RuntimeException("Bad l value: "+l);
+        if (n_sample < 0){
+            throw new RuntimeException("Bad l value: "+n_sample);
         }
 
         // recupero dal dataset lo SparkContext (viene usato solo per questo metodo, inutile memorizzarlo come variabile della classe)
         JavaSparkContext sc = new JavaSparkContext(dataset.context());
         // prendo una sample di esattamente l*sample_size elementi
-        List<Position> t = dataset.takeSample(true, sample_size * l);
+        List<Position> t = dataset.takeSample(true, sample_size * n_sample);
         
         //parallellizzo la sample dividendo gli elementi equamente tra i reducer
         ArrayList<Tuple2<Integer, Position>> toSample = new ArrayList();
         for (int i = 0; i < t.size(); i++) {
-            toSample.add(new Tuple2((i % l), t.get(i)));
+            toSample.add(new Tuple2((i % n_sample), t.get(i)));
         }
         JavaPairRDD<Integer, Position> sample = sc.parallelizePairs(toSample).cache();
 
-        return getCLARACenters(sample, k, l);
+        return getCLARACenters(sample, k, n_sample);
     }
     
     /**
@@ -221,9 +221,8 @@ public class Kmedian {
      *
      * @param k n# di cluster voluti
      * @param l n# di reducer voluti; deve essere compreso tra [0,&radic;n]
-     * altrimenti il valore viene ignorato
      * @param nlocal n# di ricerche locali di CLARANS, deve essere compreso tra
-     * [2,5] valori diversi vengono settati a 3.
+     * [2,5].
      * @return Array di k centri
      */
     public Position[] getCLARANSCenters(int k, final int l, int nlocal) {
@@ -249,7 +248,7 @@ public class Kmedian {
      * @param k n# di cluster voluti
      * @param l n# di reducer voluti
      * @param nlocal n# di ricerche locali di CLARANS, deve essere compreso tra
-     * [2,5] valori diversi vengono settati a 3.
+     * [2,5].
      * @return Array di k centri
      */
     private Position[] getCLARANSCenters(JavaPairRDD<Integer, Position> dDataset, int k, int l, int nlocal) {
