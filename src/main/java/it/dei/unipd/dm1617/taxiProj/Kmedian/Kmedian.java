@@ -66,8 +66,8 @@ public class Kmedian {
     }
 
     /**
-     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
-     * element.<br/>
+     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n/k
+     * elementi.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centri
      * restituisce all'utente il risultato megliore.
      *
@@ -75,7 +75,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getCLARACenters(int k) {
-        final int l = (int) (Math.sqrt(n));
+        final int l = (int) (Math.sqrt(n/k));
         // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
@@ -86,7 +86,7 @@ public class Kmedian {
 
     /**
      * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
-     * element ma limitando il numero di reducer a l facendo un sample per
+     * elementi ma limitando il numero di reducer a l facendo un sample per
      * eliminare gli elementi in più.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centri
      * restituisce all'utente il risultato megliore.
@@ -195,7 +195,7 @@ public class Kmedian {
     }
 
     /**
-     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
+     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n/k
      * element.<br/>
      * Una volta eseguito su ogni reducer CLARANS per determinare i centri
      * restituisce all'utente il risultato megliore.
@@ -204,7 +204,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getCLARANSCenters(int k) {
-        final int l = lmax;
+        final int l = (int) (Math.sqrt(n/k));
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
         }).cache();
@@ -214,7 +214,7 @@ public class Kmedian {
 
     /**
      * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
-     * element ma limitando il numero di reducer a l facendo un sample per
+     * elementi ma limitando il numero di reducer a l facendo un sample per
      * eliminare gli elementi in più.<br/>
      * Una volta eseguito su ogni reducer CLARANS per determinare i centri
      * restituisce all'utente il risultato megliore.
@@ -266,8 +266,8 @@ public class Kmedian {
 
     /**
      * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
-     * element ma limitando il numero di reducer a l facendo un sample per
-     * eliminare gli elementi in piﾃｹ.<br/>
+     * elementi ma limitando il numero di reducer a l facendo un sample per
+     * eliminare gli elementi in più.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centro riesegue
      * PAM tra i risultati di ogni singolo reducer.
      *
@@ -298,7 +298,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getPAMCenters(int k) {
-        int l = lmax;
+        final int l = (int) (Math.sqrt(n/k));
         // divido il dataset assegnandoli un reducer: (punto) -> (ireducer,punto)
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2((int) (Math.random() * l), point);
@@ -411,8 +411,7 @@ public class Kmedian {
      * @param l numero workers
      * @return La funzione obbiettivo di ciascun reducer
      */
-    private Double[] parallelObjectiveFunction(Position[][] centers, int l) {
-        
+    private Double[] parallelObjectiveFunction(Position[][] centers, int l) {   
         Double[] initialEntry = new Double[l];
         for(Double entry: initialEntry){
             entry = Double.valueOf(0);
