@@ -399,7 +399,7 @@ public class Kmedian {
                     best = i;
                 }
             }
-            return new Tuple2<Integer, Position>(best, min);
+            return new Tuple2<Integer, Double>(best, min);
         });
 
         //per ogni punto aggrego il valore della distanza dal suo centro e restituisco il risultato
