@@ -18,13 +18,13 @@ public class Kmedian_PAM {
 	 */
     public static Position[][] parallelPAM(JavaPairRDD<Integer, Position> dataset, final int k, int l) {
     	// raggruppa il dataset per reducer e mappa l'intera partizione nei suoi centri
-        List<Tuple2<Integer, Position[]>> p = dataset.groupByKey().mapToPair((partition) -> {
+        List<Tuple2<Integer, Position[]>> pCenters = dataset.groupByKey().mapToPair((partition) -> {
             return new Tuple2<>(partition._1(), iter_pam(partition._2(), k));
         }).collect();
 
         // converti i centri trovati in array e ritorna
         Position[][] toReturn = new Position[l][k];
-        p.forEach((tuple) -> {
+        pCenters.forEach((tuple) -> {
             toReturn[tuple._1()] = tuple._2();
         });
         return toReturn;
