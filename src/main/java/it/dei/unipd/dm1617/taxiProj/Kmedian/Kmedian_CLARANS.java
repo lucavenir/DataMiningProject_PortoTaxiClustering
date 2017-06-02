@@ -27,13 +27,13 @@ public class Kmedian_CLARANS {
         final int nneighbor = (maxNeighbor < minmaxNeighbor) ? minmaxNeighbor : maxNeighbor; // potrebbe generare errore se c'è una partizione troppo piccola
 
         //ragruppa ogni partizione ed esegue per ciascuna di esse clarans in modo iterativo
-        List<Tuple2<Integer, Position[]>> p = dataset.groupByKey().mapToPair((partition) -> {
-            return new Tuple2(partition._1(), iter_clarans(partition._2(), k, nlocal, nneighbor));
+        List<Tuple2<Integer, Position[]>> lCenters = dataset.groupByKey().mapToPair((partition) -> {
+            return new Tuple2<Integer, Position[]>(partition._1(), iter_clarans(partition._2(), k, nlocal, nneighbor));
         }).collect();
 
         //conversione ArrayList in array e ritorno
         Position[][] toReturn = new Position[l][k];
-        p.forEach((tuple) -> {
+        lCenters.forEach((tuple) -> {
             toReturn[tuple._1()] = tuple._2();
         });
         return toReturn;
