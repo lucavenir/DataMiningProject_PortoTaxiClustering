@@ -4,6 +4,7 @@ import org.apache.spark.sql.SparkSession;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -129,8 +130,10 @@ public class InputOutput {
 	    	.json(path);
 	}
 	
-	public static void writeList(List a, String path)  {
-		
+	public static void writeList(List a, String path)
+	{
+		File outputfile = new File(path);
+		outputfile.getParentFile().mkdirs();
 		CSVWriter writer = null;
 		try {
 			writer = new CSVWriter(new FileWriter(path));
@@ -144,6 +147,8 @@ public class InputOutput {
 	
 	public static void appendRow(String[] row, String path)
 	{
+		File outputfile = new File(path);
+		outputfile.getParentFile().mkdirs();
 		CSVWriter writer = null;
 		try {
 			writer = new CSVWriter(new FileWriter(path,true));

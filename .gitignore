@@ -10,5 +10,4 @@
 # questo non so bene cosa sia, si può eliminare?
 /src/main/java/Position2.java
 gradle.properties
-#.classpath
-#.project
+/output

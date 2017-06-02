@@ -24,6 +24,8 @@ import org.apache.spark.mllib.clustering.KMeans;
 import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
+
+import java.io.File;
 import java.io.IOException;
 
 // Serve per verificare se il dataset iniziale e' stato gia' filtrato
@@ -31,22 +33,42 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 
+
 /**
  * 
- * In questa classe vengono lanciati i vari tipi di clustering e mostrato un confronto
+ * Questa classe fornisce delle dimostrazioni degli algoritmi di clustering 
+ * PAM CLARA CLARANS CLARAFAST e KMEANS|| * 
  * 
- * @version 1.0
- * @author Met
- *
+ * Per eseguire da terminale con gradle:
+ * Su linux si può eseguire direttamente con
+ *  	./gradlew run
+ * Su Windows
+ * 
+ * 
+ * Per eseguire in eclipse:
+ *1. Andare in gradle tasks -> application
+ *2. Tastro destro su run -> Open gradle Run Configuration
+ *3. Andare su arguments
+ *4. In programm arguments inserire
+ *	-PappArgs="la vostra cartella del progetto con percorso assouluto"
+ *	Nel mio caso ho scritto:
+ *	-PappArgs="C:/Users/strin/workspace/NYC_TaxiDataMiningProject/"
+ * Attenzione agli slash (vanno usati gli "/" e NON gli "\");
+ * Attenzione agli spazi del vostro percorso assoluto(se ne avete, sostituiteli con "%20");
+ * Attenzione: mettere un "/" alla fine del percorso (come nell'esempio) altrimenti non funziona!
+ * 
+ * Per utilizzare il dataset completo, scaricare il file a questo link:
+ * https://archive.ics.uci.edu/ml/machine-learning-databases/00339/train.csv.zip
+ * Spacchettare e mettere nella cartella data il file train.csv
  */
 public class Main {
 	
 	
-	private static final int PAM		=     0b1;
-	private static final int CLARA		=    0b10;
-	private static final int CLARAFAST	=   0b100;
-	private static final int CLARANS	=  0b1000;
-	private static final int KMEANS		= 0b10000;
+	private static final int ALG_PAM		=     0b1;
+	private static final int ALG_CLARA		=    0b10;
+	private static final int ALG_CLARAFAST	=   0b100;
+	private static final int ALG_CLARANS	=  0b1000;
+	private static final int ALG_KMEANS		= 0b10000;
 	
 	private static final double IMAGE_MIN_LAT = 41.05;
 	private static final double IMAGE_MAX_LAT = 41.35;
@@ -58,48 +80,24 @@ public class Main {
 	private static SparkSession ss;
     
     public static void main(String[] args) {
-    	/*
-    	 * Per configurare correttamente:
-    	  1. Andare in gradle tasks -> application
-    	  2. Tastro destro su run -> Open gradle Run Configuration
-    	  3. Andare su arguments
-    	  4. In programm arguments inserire
-    	  	-PappArgs="la vostra cartella del progetto con percorso assouluto"
-    	  	Nel mio caso ho scritto:
-    	  	-PappArgs="C:/Users/strin/workspace/NYC_TaxiDataMiningProject/"
-    	 * Attenzione agli slash (vanno usati gli "/" e NON gli "\");
-    	 * Attenzione agli spazi del vostro percorso assoluto(se ne avete, sostituiteli con "%20");
-    	 * Attenzione: mettere un "/" alla fine del percorso (come nell'esempio) altrimenti non funziona!
-    	 * 
-    	 * Per riferimento a dove mi sono informato:
-    	 * http://stackoverflow.com/questions/11696521/how-to-pass-arguments-from-command-line-to-gradle
-    	 */
-    	
-    	/*
-    	 * Per utilizzare il dataset completo, scaricare il file a questo link:
-    	 * https://archive.ics.uci.edu/ml/machine-learning-databases/00339/train.csv.zip
-    	 * Spacchettare e mettere nella cartella data il file train.csv
-    	 */
     	
 
     	
     	// Commentare una delle due righe in base al dataset desiderato
-    	final String dataset = "train.csv";
-    	//final String dataset = "data_sample.csv";
+    	final String dataset = "data/train.csv";
+    	//final String dataset = "data/data_sample.csv";
     	
     	/*
     	 * Filtro i "%20" e li sostituisce con uno spazio
     	 * (per ovviare al problema degli spazi nel project path)
     	 * Directory del progetto caricata tramite linea di comando
-    	 */
-    	
+    	 */    	
     	String projectPath = args[0];
     	projectPath = projectPath.replaceFirst("%20", " ");
 
-
         /*
          * Per utenti windows, scaricare il file winutils.exe da internet e metterlo nella cartella bin
-         * Su linux pare non influire, qualunque cosa si imposti
+         * Su linux pare non influisce
          */
         System.setProperty("hadoop.home.dir", projectPath);
         
@@ -108,16 +106,17 @@ public class Main {
         sc = new JavaSparkContext(sparkConf);        
         ss = new SparkSession(sc.sc());
         
-        /*
-         * Per velocizzare la prima lettura del dataset viene salvato gia' filtrato in automatico nell cartella data
-         * Nelle successive esecuzioni viene letto direttamente il dataset alleggerito
-         */
         
     	// Struttura dati per il clustering
     	JavaRDD<Position> positions;
     	
-        System.out.println("loading dataset...");
-        if (dataset.contains("train")) {
+        /*
+         * Per velocizzare la prima lettura del dataset viene salvato gia' filtrato in automatico nell cartella data
+         * Nelle successive esecuzioni viene letto direttamente il dataset alleggerito
+         */
+        System.out.println("loading dataset "+dataset+"...");
+        long t0_load = System.nanoTime();
+        if (dataset.contains("train.csv")) {
 	        Path dataPath = Paths.get(projectPath, "/data/trainFiltered");
 	        
 	        if (Files.exists(dataPath))
@@ -126,21 +125,31 @@ public class Main {
 	        }
 	        else
 	        {
-	        	// Leggi il dataset
-	        	positions = InputOutput.readOriginalDataset(ss, projectPath + "/data/" + dataset);	        	
-	        	// Salva per future esecuzioni
-	        	InputOutput.write(positions, projectPath + "/data/trainFiltered");
+	        	File f = new File(projectPath + dataset);
+	        	if(f.exists() && !f.isDirectory())
+	        	{ 
+	        	    positions = InputOutput.readOriginalDataset(ss, projectPath + dataset);// Leggi il dataset	    
+	        		InputOutput.write(positions, projectPath + "/data/trainFiltered");// Salva per future esecuzioni
+	        	}
+	        	else
+	        	{
+	        		System.out.println("dataset manacante: puoi scaricare il dataset da https://archive.ics.uci.edu/ml/machine-learning-databases/00339/train.csv.zip estrarlo e salvarlo nella cartella data.\nSe no puoi provare ad usare il file data_sample.csv (modificando le prime righe del main) ma è fin troppo piccolo");
+	        		return;
+	        	}
 	        }
         }
         else
         { // Non e' necessario per il sample che e' molto veloce da caricare e pulire
-        	positions = InputOutput.readOriginalDataset(ss, projectPath + "data/" + dataset);
+        	positions = InputOutput.readOriginalDataset(ss, projectPath + dataset);
         }
-        System.out.println("loaded");
-      
+        long t1_load = System.nanoTime();
+        System.out.println("loaded ("+((t1_load-t0_load)/1000000)+"ms)");      
         
         
        
+        //
+        //Disegna l'intero dataset
+        //
         System.out.println("drawing complete dataset...");
     	long t0_drawComplete = System.nanoTime();
         try
@@ -148,7 +157,7 @@ public class Main {
         	new ClusteringDrawing(2000,2000).setAlfa(0.8).
         		setLimits(IMAGE_MAX_LAT, IMAGE_MIN_LONG, IMAGE_MIN_LAT, IMAGE_MAX_LONG).
 				draw(positions, null, null).
-				save("data/images/completeDataset.png");
+				save("output/completeDataset.png");
         }
         catch (IOException e){
         	ss.close();
@@ -162,69 +171,11 @@ public class Main {
         /*
          * A questo punto positions e' il ns dataset su cui possiamo applicare l'algoritmo di clustering
          * Che si utilizzi il sample o il dataset completo basta riferirsi alla variabile positions
-         */
-               
+         */              
         
-        runAllIncreasingK(positions, 4, 5, 1, true, PAM | CLARA | CLARAFAST | CLARANS | KMEANS);
+        runAllIncreasingK(positions, 2, 4, 1, true, ALG_PAM | ALG_CLARA | ALG_CLARAFAST | ALG_CLARANS | ALG_KMEANS);
         
-        /*if(alg==KMEANS)
-        {
-	        
-	        // Misuro lo spazio occupato dal clustering (in totale e in kB)
-	        long space = SizeEstimator.estimate(kmeansClusters)/1024
-	        		+ SizeEstimator.estimate(K_meansData)/1024
-	        		+ SizeEstimator.estimate(positions)/1024; // Sia chiaro: questo è solo un esempio di funzionamento
-	    
-	        /*
-	         * Creo un'istanza di Timestamp da end-init: viene creata una data-ora (che sarà vicina a 00:00 del 1/1/1970);
-	         * Serve per stampare minuti/secondi dell'esecuzione del clustering
-	         *
-	        //Timestamp t = new Timestamp (t1-t0);
-	        
-	        // Calcolo dei punti a massima distanza dal centro del loro cluster + Print dei centri
-	        System.out.println("Dimensione del cluster kmeansClusters: " + kmeansClusters.k());
-	        Tuple2<Double, Double> maxdist = Utils.calcolaMaxDistanze(kmeansClusters, positions);
-	        
-	        
-	        
-	        /*
-	         *  Piglio un campione casuale, con probabilita' PROB di essere estratto
-	         *  .cache() e' fondamentale per evitare che le operazioni sulle
-	         *  chiamate ddi position_randomly_filtered
-	         *  siano aleatorie come le scelte di sample(...)
-	         */
-	        
-	        /*
-	        JavaRDD<Position> position_randomly_filtered = positions.sample(false, 0.005).cache();
-	        
-	        System.out.println("Dimensione del dataset: " + position_randomly_filtered.count());
-	        double silhouette = Utils.silhouetteCoefficient(kmeansClusters, position_randomly_filtered);
-	        System.out.println("Valutazione delle performance di KMEANS:\n\n\n SILHOUETTE COEFFICIENT: \n" + silhouette);
-	        
-	        //System.out.println("\n\nMedia e Dev Standard: " + maxdist._1() + " , " + maxdist._2());
-	        //System.out.print("K-means time: ");
-	        
-	        /*
-	         * Per qualche strano motivo (che non voglio indagare),
-	         * Timestamp ha eliminato i metodi .getMinute() e . getSecond().
-	         * Allora tocca "passare" per la classe LocalDateTime che questi metodi li ha. 
-	         */
-	         /*
-	        System.out.println(t.toLocalDateTime().getMinute() + " minutes and " + t.toLocalDateTime().getSecond() + " seconds");
-	        System.out.println("k=" + k);
-	        System.out.println("K-means space: " + space + " kB");
-	        //E' solo un esempio. Non sara' la distanza che noi dobbiamo minimizzare.	        
-        }*/
-        
-        /* Per definizione Hopkins va fatto SOLO su una piccola
-         * frazione di dataset; allora sfruttiamo un sample casuale:
-         */
-
-        // E stampiamo la misura
-        //System.out.println("\n\n\nHopkins: " + Utils.hopkinsStatistic(position_randomly_filtered) + "\n\n\n");
-        
-        
-        
+                
         
         // Chiudi Spark
         ss.close();
@@ -233,20 +184,39 @@ public class Main {
         
     }
     
-    private static void runAllIncreasingK(JavaRDD<Position> positions, int minK, int maxK, int kStep, boolean doDrawings, int algsToExecute)
+    
+    /**
+     * Esegue gli algoritmi di clustering specificati in algsToExecute con k crescente. I cetri risultanti dagli algoritmi,
+     * il valore della funzione obbiettivo e i tempi di esecuzione sono forniti in output/<timestampEsecuzione>/resultComplete.csv. Le colonne 
+     * sono nell'ordine: k, algoritmo, tempo d'esecuzione in millisecondi, funzione obbiettivo e poi le coordinate dei centri
+     * valori non definiti sono rappresentati con "NULL" 
+     * @param positions dataset con le posizioni
+     * @param minK k di partenza
+     * @param maxK k massimo
+     * @param kStep incremento del valore di k ad ogni giro
+     * @param doDrawings se impostato a true vengono creati anche i disegni del clustering ottenuto (in ouput//<timestampEsecuzione>/images)
+     * @param algsToExecute qui vanno specificati gli algoritmi da eseguire usando le costanti ALG_* in or binario (operatore "|")
+     * @return Array con i centri dei cluster (Position[k][alg][centerNum])
+     */
+    private static Position[][][] runAllIncreasingK(JavaRDD<Position> positions, int minK, int maxK, int kStep, boolean doDrawings, int algsToExecute)
     {
       
-
+    	if(minK<2)
+    	{
+    		throw new IllegalArgumentException("minK should be at least 2");
+    	}
         //String path = "resultTimesAndObj"+System.currentTimeMillis()+".csv";
-        String pathComplete = "output/resultComplete"+System.currentTimeMillis()+".csv";
-    	        
-        Position[] centers = null;
-        Kmedian a = new Kmedian(positions);
-        KMeansModel kmeansClusters= null;
         long startTime = System.currentTimeMillis();
+        String outFolder = "output/"+startTime+"/";
+        new File(outFolder).mkdirs();
+        String pathComplete = outFolder+"resultComplete.csv";
+    	Position[][][] clustersCenters = new Position[(int)Math.ceil((maxK-minK+1)/((double)kStep))][5][];        
         
         for (int k = minK; k < maxK; k+=kStep)
         {
+        	Kmedian a = new Kmedian(positions);
+        	KMeansModel kmeansClusters= null;
+        	Position[] centers = null;
 	        //String[] resultK = new String[11];
 	        for (int j = 0; j < 5; j++)
 	        {
@@ -257,44 +227,44 @@ public class Main {
 		        int alg = 1<<j; 
 		        switch(alg)
 		        {
-		        case PAM:
-		        	if((algsToExecute & PAM) == 0)
+		        case ALG_PAM:
+		        	if((algsToExecute & ALG_PAM) == 0)
 		        		break;
 		        	System.out.println("Running PAM (k="+k+", started at "+humanTime+")...");
 			        centers = a.getPAMCenters(k, 4);
 			        t1 = System.nanoTime();
 					if(doDrawings)
-						drawClustering(a,centers,"data/images/"+startTime+"kmedianPAM"+k+".png");
+						drawClustering(a,centers,outFolder+"images/"+k+"kmedianPAM.png");
 		        	break;
-		        case CLARA:
-		        	if((algsToExecute & CLARA) == 0)
+		        case ALG_CLARA:
+		        	if((algsToExecute & ALG_CLARA) == 0)
 		        		break;
 		        	System.out.println("Running CLARA (k="+k+", started at "+humanTime+")...");
 			        centers = a.getCLARACenters(k, 4);
 			        t1 = System.nanoTime();
 					if(doDrawings)
-						drawClustering(a,centers,"data/images/"+startTime+"kmedianCLARA"+k+".png");
+						drawClustering(a,centers,outFolder+"images/"+k+"kmedianCLARA.png");
 		        	break;
-		        case CLARAFAST:
-		        	if((algsToExecute & CLARAFAST) == 0)
+		        case ALG_CLARAFAST:
+		        	if((algsToExecute & ALG_CLARAFAST) == 0)
 		        		break;
 		        	System.out.println("Running CLARAFAST (k="+k+", started at "+humanTime+")...");
 			        centers = a.getCLARAFASTCenters(k);
 			        t1 = System.nanoTime();
 					if(doDrawings)
-						drawClustering(a,centers,"data/images/"+startTime+"kmedianCLARAFAST"+k+".png");
+						drawClustering(a,centers,outFolder+"images/"+k+"kmedianCLARAFAST.png");
 		        	break;
-		        case CLARANS:
-		        	if((algsToExecute & CLARANS) == 0)
+		        case ALG_CLARANS:
+		        	if((algsToExecute & ALG_CLARANS) == 0)
 		        		break;
 		        	System.out.println("Running CLARANS (k="+k+", started at "+humanTime+")...");
 			        centers = a.getCLARANSCenters(k);
 			        t1 = System.nanoTime();
 					if(doDrawings)
-						drawClustering(a,centers,"data/images/"+startTime+"kmedianCLARANS"+k+".png");
+						drawClustering(a,centers,outFolder+"images/"+k+"kmedianCLARANS.png");
 		        	break;
-		        case KMEANS:
-		        	if((algsToExecute & KMEANS) == 0)
+		        case ALG_KMEANS:
+		        	if((algsToExecute & ALG_KMEANS) == 0)
 		        		break;
 		        	/*
 		             * Crea un clustering k means
@@ -308,7 +278,7 @@ public class Main {
 		            kmeansClusters = KMeans.train(K_meansData.rdd(), k, 60);
 			        t1 = System.nanoTime();
 		            if(doDrawings)
-						drawClustering(kmeansClusters,positions,"data/images/"+startTime+"KMEANS"+k+".png");
+						drawClustering(kmeansClusters,positions,outFolder+"images/"+k+"KMEANS.png");
 			        
 			        // Conversione per utilizzare la objective function di kmedian
 					Vector[] centri =  kmeansClusters.clusterCenters();
@@ -330,23 +300,31 @@ public class Main {
 		       // resultK[alg * 2 + 1] = "" + time_ms;
 		        
 		        String[] clustersStr = new String[maxK*2+4];
-		        Arrays.fill(clustersStr, ""+(-1));
+		        Arrays.fill(clustersStr, "NULL");
 		        clustersStr[0]=""+k;
 		        clustersStr[1]=""+alg;
 		        clustersStr[2]=""+time_ms;
 		        clustersStr[3]=""+objFnc;
-		        for(int i = 0; i< centers.length; i+=2)
+		        for(int i = 0; i< centers.length; i++)
 		        {
-		        	clustersStr[i+4]   = ""+centers[i].getPickupLatitude();
-		        	clustersStr[i+4+1] = ""+centers[i].getPickupLongitude();
+		        	clustersStr[i*2+4]   = ""+centers[i].getPickupLatitude();
+		        	clustersStr[i*2+4+1] = ""+centers[i].getPickupLongitude();
 		        }
 		        InputOutput.appendRow(clustersStr, pathComplete);
+		        clustersCenters[k-minK][j] = centers;
 	        }
 	       // resultK[10] = "" + k;
 	       // InputOutput.appendRow(resultK, path);
         }        
+        return clustersCenters;
     }
     
+    /**
+     * Disegna il clustering fornito salvandolo nel file specificato
+     * @param kmm Risultato di un clustering KMeans
+     * @param positions dataset con le posizioni
+     * @param savePath file in cui salvare l'immagine
+     */
     private static void drawClustering(KMeansModel kmm, JavaRDD<Position> positions, String savePath)
     {
         System.out.println("drawing positions...");
@@ -368,6 +346,12 @@ public class Main {
         System.out.println("done ("+((draw_t1-draw_t0)/1000000)+"ms)");
     }
     
+    /**
+     * Disegna il clustering fornito salvandolo nel file specificato
+     * @param kMedian clustering kMedian
+     * @param centers centri calcolati con il clustering
+     * @param savePath file in cui salvare l'immagine
+     */
     private static void drawClustering(Kmedian kMedian, Position[] centers, String savePath)
     {
         System.out.println("drawing positions...");

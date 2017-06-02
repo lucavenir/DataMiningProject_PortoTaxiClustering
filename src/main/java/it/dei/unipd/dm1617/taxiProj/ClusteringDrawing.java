@@ -237,7 +237,7 @@ public class ClusteringDrawing
 	{
 		File outputfile = new File(path);
 		outputfile.getParentFile().mkdirs();
-       		ImageIO.write(img, "png", outputfile);
+       	ImageIO.write(img, "png", outputfile);
 	}
 
 	/**
