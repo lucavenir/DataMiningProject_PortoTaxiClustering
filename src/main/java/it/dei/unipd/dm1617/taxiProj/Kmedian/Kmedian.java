@@ -319,12 +319,12 @@ public class Kmedian {
         Position[][] medoids = Kmedian_PAM.parallelPAM(dDataset, k, l);
 
         // con i medoidi trovati calcolo per ciascuno di loro la funzione obbiettivo phi su tutto il dataset 
-        ArrayList<Position> punti = new ArrayList();
-        for (Position[] medoid : medoids) {
-            punti.addAll(Arrays.asList(medoid));
+        ArrayList<Position> t = new ArrayList();
+        for (Position[] ti : medoids) {
+            t.addAll(Arrays.asList(ti));
         }
         
-        return Kmedian_PAM.getPAMCenters(punti, k);
+        return Kmedian_PAM.getPAMCenters(t, k);
     }
 
     /**
