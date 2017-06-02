@@ -39,6 +39,7 @@ public class Kmedian {
         n = datasetList.size();
         lmax = (int) (Math.sqrt(n));
     }
+        
 
     /**
      * @return dataset memorizzato nella struttura dati
@@ -53,6 +54,13 @@ public class Kmedian {
     public long getSize() {
         return n;
     }
+    
+    /**
+     * @return dimensione del dataset
+     */
+    public int getlmax() {
+        return lmax;
+    }
 
     /**
      * Restituisce una sample del dataset su cui poter eseguire il clustering.
@@ -66,7 +74,7 @@ public class Kmedian {
     }
 
     /**
-     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n/k
+     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;nk
      * elementi.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centri
      * restituisce all'utente il risultato megliore.
@@ -86,8 +94,7 @@ public class Kmedian {
 
     /**
      * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
-     * elementi ma limitando il numero di reducer a l facendo un sample per
-     * eliminare gli elementi in più.<br/>
+     * elementi limitando il numero di reducer a l, utile per aesecuzione ridotta.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centri
      * restituisce all'utente il risultato megliore.
      *
@@ -96,7 +103,7 @@ public class Kmedian {
      * @return Array di k centri
      */
     public Position[] getCLARACenters(int k, final int l) {
-        if (l >= lmax || l < 0) {
+        if (l > lmax || l < 0) {
             //ignoro l se troppo grande
             throw new RuntimeException("Bad l value: "+l);
         } else {
@@ -195,8 +202,8 @@ public class Kmedian {
     }
 
     /**
-     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n/k
-     * element.<br/>
+     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;nk
+     * elementi.<br/>
      * Una volta eseguito su ogni reducer CLARANS per determinare i centri
      * restituisce all'utente il risultato megliore.
      *
@@ -214,8 +221,7 @@ public class Kmedian {
 
     /**
      * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
-     * elementi ma limitando il numero di reducer a l facendo un sample per
-     * eliminare gli elementi in più.<br/>
+     * elementi limitando il numero di reducer a l, utile per aesecuzione ridotta.<br/>
      * Una volta eseguito su ogni reducer CLARANS per determinare i centri
      * restituisce all'utente il risultato megliore.
      *
@@ -266,8 +272,7 @@ public class Kmedian {
 
     /**
      * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;n
-     * elementi ma limitando il numero di reducer a l facendo un sample per
-     * eliminare gli elementi in più.<br/>
+     * elementi limitando il numero di reducer a l, utile per aesecuzione ridotta.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centro riesegue
      * PAM tra i risultati di ogni singolo reducer.
      *
@@ -289,8 +294,8 @@ public class Kmedian {
     }
 
     /**
-     * Calcola i centri per un k-clustering su un dataset già partizionato dai
-     * metodi pubblici distribuendo il compito tra l reducer.<br/>
+     * Calcola i centri per un k-clustering affidando ad ogni reducer &radic;nk
+     * elementi.<br/>
      * Una volta eseguito su ogni reducer PAM per determinare i centro riesegue
      * PAM tra i risultati di ogni singolo reducer.
      *
