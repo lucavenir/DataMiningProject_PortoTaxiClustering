@@ -28,7 +28,7 @@ public class Kmedian_CLARANS {
 
         //ragruppa ogni partizione ed esegue per ciascuna di esse clarans in modo iterativo
         List<Tuple2<Integer, Position[]>> lCenters = dataset.groupByKey().mapToPair((partition) -> {
-            return new Tuple2(partition._1(), iter_clarans(partition._2(), k, nlocal, nneighbor));
+            return new Tuple2<Integer, Position[]>(partition._1(), iter_clarans(partition._2(), k, nlocal, nneighbor));
         }).collect();
 
         //conversione ArrayList in array e ritorno
