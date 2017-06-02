@@ -141,4 +141,17 @@ public class InputOutput {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void appendRow(String[] row, String path)
+	{
+		CSVWriter writer = null;
+		try {
+			writer = new CSVWriter(new FileWriter(path,true));
+			writer.writeNext(row);
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Problems while writing CSV results file.");
+			e.printStackTrace();
+		}
+	}
 }
