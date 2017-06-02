@@ -216,7 +216,7 @@ public class Kmedian {
             return new Tuple2<Integer, Position>((int) (Math.random() * l), point);
         }).cache();
 
-        return getCLARANSCenters(dDataset, k, lmax, 3);
+        return getCLARANSCenters(dDataset, k, l, 3);
     }
 
     /**
@@ -308,7 +308,7 @@ public class Kmedian {
         JavaPairRDD<Integer, Position> dDataset = dataset.mapToPair((point) -> {
             return new Tuple2<Integer, Position>((int) (Math.random() * l), point);
         }).cache();
-        return getPAMCenters(dDataset, k, lmax);
+        return getPAMCenters(dDataset, k, l);
     }
 
     /**
