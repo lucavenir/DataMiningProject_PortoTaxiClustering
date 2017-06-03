@@ -42,20 +42,18 @@ import java.nio.file.Path;
  * Per eseguire da terminale con gradle:
  * Su linux si può eseguire direttamente con
  *  	./gradlew run
- * Su Windows
+ * Su Windows bisogna scaricare winutils.exe da https://github.com/steveloughran/winutils e metterlo nella cartella bin
+ * Poi si può eseguire con
+ * 	gradlew.bat run
  * 
  * 
  * Per eseguire in eclipse:
- *1. Andare in gradle tasks -> application
- *2. Tastro destro su run -> Open gradle Run Configuration
- *3. Andare su arguments
- *4. In programm arguments inserire
- *	-PappArgs="la vostra cartella del progetto con percorso assouluto"
- *	Nel mio caso ho scritto:
- *	-PappArgs="C:/Users/strin/workspace/NYC_TaxiDataMiningProject/"
- * Attenzione agli slash (vanno usati gli "/" e NON gli "\");
- * Attenzione agli spazi del vostro percorso assoluto(se ne avete, sostituiteli con "%20");
- * Attenzione: mettere un "/" alla fine del percorso (come nell'esempio) altrimenti non funziona!
+ * Aprire Run>Run configurations...
+ * Doppio click su gradle peoject
+ * In Gradle Tasks inserire "run"
+ * Poi premere Workspace e selezionare la cartella
+ * Dare un nome alla configurazione, applicare e chiudere
+ * Ora si può eseguire con la nuova configurazione
  * 
  * Per utilizzare il dataset completo, scaricare il file a questo link:
  * https://archive.ics.uci.edu/ml/machine-learning-databases/00339/train.csv.zip
@@ -173,6 +171,7 @@ public class Main {
          * Che si utilizzi il sample o il dataset completo basta riferirsi alla variabile positions
          */              
         
+        //modificare i parametri 2, 3, 4 e 6 per eseguire diversamente
         runAllIncreasingK(positions, 2, 4, 1, true, ALG_PAM | ALG_CLARA | ALG_CLARAFAST | ALG_CLARANS | ALG_KMEANS);
         
                 
