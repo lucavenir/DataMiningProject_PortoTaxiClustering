@@ -79,12 +79,16 @@ public class Kmedian_CLARANS {
      * @return Array di k centri
      */
     private static Position[] iter_clarans(Iterable<Position> list, int k, int nlocal, int nneighbor) {
-    	// set variabili utili
-        Iterator<Position> iter = list.iterator();
+	Iterator<Position1> iter = list.iterator();
+    	// Creo lista per estrazione casuale
+        ArrayList<Position1> randomList = new ArrayList();
+        int size = 0;
+        while(iter.hasNext()){
+            randomList.add(iter.next());
+            size++;
+        }
+	    
         boolean stop = false;
-        
-        // reset_once verifica che clarans non si sia bloccato per lista troppo piccola rispetto a k
-        boolean reset_once = false;
         
         // attuale candidato output
         Position[] bestmedoids = null;
@@ -94,9 +98,9 @@ public class Kmedian_CLARANS {
         Position[][] medoids = new Position[nlocal][k];
         int indexLocal = 0;
         int indexK = 0;
-        while (iter.hasNext() && indexLocal < nlocal) {
+        while (indexLocal < nlocal) {
         	// prendo un elemento della lista
-            Position candidate = iter.next();
+            Position candidate = randomList.get( (int) (Math.random()*size));
             boolean candidate_accept = true;
 
             // controllo che non sia un doppione di un elemento già preso
@@ -113,24 +117,12 @@ public class Kmedian_CLARANS {
                 if (indexK == k) {
                     indexK = 0;
                     indexLocal++;
-                    reset_once = false;
-                }
-            }
-            
-            // raggiunta la fine della lista
-            if (!iter.hasNext()) {
-            	//se è la seconda volta senza aver inserito nulla è un errore, non ci sono abbastanza elementi, altrimenti riprova
-                if (!reset_once) {
-                    iter = list.iterator();
-                    reset_once = true;
-                } else {
-                    throw new RuntimeException("Bad sampling made CLARANS algorithm impossible for same partition.");
                 }
             }
         }
 
         // calcolo la funzione obbiettivo per i centri trovati
-        double initialPhi[] = objectiveFunction(list.iterator(), medoids, k, nlocal);
+        double initialPhi[] = objectiveFunction(randomList.iterator(), medoids, k, nlocal);
 
         while (!stop) {
         	// generazione dei vicini dei centri attuali (vicino = medoids ma con uno dei centri diverso)
@@ -155,11 +147,10 @@ public class Kmedian_CLARANS {
                     }
                 }
             }
-
-            reset_once = false;
-            while (iter.hasNext() && indexLocal < nlocal) {
+		
+            while (indexLocal < nlocal) {
             	// prendo il prossimo elemento della lista
-                Position candidate = iter.next();
+                Position candidate = randomList.get( (int) (Math.random()*size));
                 boolean candidate_accept = true;
 
                 // controllo non sia un doppione di un elemento già presente tra i centri
@@ -191,7 +182,6 @@ public class Kmedian_CLARANS {
                     if (indexK == nneighbor) {
                         indexK = 0;
                         indexLocal++;
-                        reset_once = false;
 
                         // se non ho ancora finito ricontrollo di nuovo i due più vicini per il nuovo locale
                         if (indexLocal < nlocal) {
@@ -211,21 +201,10 @@ public class Kmedian_CLARANS {
                         }
                     }
                 }
-
-                // raggiunta la fine della lista
-                if (!iter.hasNext()) {
-                	//se è la seconda volta senza aver inserito nulla è un errore, non ci sono abbastanza elementi, altrimenti riprova
-                    if (!reset_once) {
-                        iter = list.iterator();
-                        reset_once = true;
-                    } else {
-                        throw new RuntimeException("Bad sampling made CLARANS algorithm impossible for same partition.");
-                    }
-                }
             }
 
             // calcolo le funzioni obbiettivo per i vicini
-            double phi[][] = objectiveFunctionNeighbor(list.iterator(), medoids, neighbor, neighborIndex, k, nlocal, nneighbor);
+            double phi[][] = objectiveFunctionNeighbor(randomList.iterator(), medoids, neighbor, neighborIndex, k, nlocal, nneighbor);
 
             // verifico che abbia trovato dei vicini migliori
             boolean[] toRemove = new boolean[nlocal];
