@@ -444,10 +444,16 @@ public class Kmedian {
                 } else if (!n1 && n2) {
                     return phi1;
                 } else if (n1 && n2) {
+                    // azzera una delle due liste perché entrambe vuote (non dovrebbe mai capitare
                     for (Double e : phi1) {
-                        e = Double.valueOf(0);
+                         e = Double.valueOf(0);
                     }
                     return phi1;
+                }
+
+                // se tutto ok invece somma
+                for (int i = 0; i < phi1.length; i++) {
+                     phi1[i] += phi2[i];
                 }
                 return phi1;
         });
