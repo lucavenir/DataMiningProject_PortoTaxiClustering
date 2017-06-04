@@ -172,7 +172,7 @@ public class Main {
          */              
         
         //modificare i parametri 2, 3, 4 e 6 per eseguire diversamente
-        runAllIncreasingK(positions, 2, 4, 1, true, ALG_PAM | ALG_CLARA | ALG_CLARAFAST | ALG_CLARANS | ALG_KMEANS);
+        runAllIncreasingK(positions, 63, 63, 1, true, ALG_CLARAFAST);
         
                 
         
@@ -211,7 +211,7 @@ public class Main {
         String pathComplete = outFolder+"resultComplete.csv";
     	Position[][][] clustersCenters = new Position[(int)Math.ceil((maxK-minK+1)/((double)kStep))][5][];        
         
-        for (int k = minK; k < maxK; k+=kStep)
+        for (int k = minK; k <= maxK; k+=kStep)
         {
         	Kmedian a = new Kmedian(positions);
         	KMeansModel kmeansClusters= null;
@@ -289,8 +289,10 @@ public class Main {
 		            	throw new RuntimeException("invalid alg");
 		        }
 		        
-		        
-		        objFnc = a.objectiveFunction(centers);
+		        if(centers!=null)//se è stato eseguito
+		        	objFnc = a.objectiveFunction(centers);
+		        else
+		        	objFnc = -1;
 				System.out.println("Objective Function: " + objFnc);
 		        long time_ms = (t1-t0)/1000_000;
 		        
@@ -302,12 +304,15 @@ public class Main {
 		        Arrays.fill(clustersStr, "NULL");
 		        clustersStr[0]=""+k;
 		        clustersStr[1]=""+alg;
-		        clustersStr[2]=""+time_ms;
-		        clustersStr[3]=""+objFnc;
-		        for(int i = 0; i< centers.length; i++)
+		        if(objFnc!=-1)//se è stato eseguito
 		        {
-		        	clustersStr[i*2+4]   = ""+centers[i].getPickupLatitude();
-		        	clustersStr[i*2+4+1] = ""+centers[i].getPickupLongitude();
+			        clustersStr[2]=""+time_ms;
+			        clustersStr[3]=""+objFnc;
+			        for(int i = 0; i< centers.length; i++)
+			        {
+			        	clustersStr[i*2+4]   = ""+centers[i].getPickupLatitude();
+			        	clustersStr[i*2+4+1] = ""+centers[i].getPickupLongitude();
+			        }
 		        }
 		        InputOutput.appendRow(clustersStr, pathComplete);
 		        clustersCenters[k-minK][j] = centers;
