@@ -93,7 +93,7 @@ public class Utils {
 	 * @return il coefficiente che misura la qualita' del clustering (unsupervised evaluation)
 	 * 
 	 */
-	public static double silhouetteCoefficient (KMeansModel input_clusters, JavaRDD<Position> in_pos) {
+	public static double silhouetteCoefficient (Position centri[], JavaRDD<Position> in_pos) {
 		/*
 		 * Per ogni punto, e' richiesto il calcolo di sp
 		 * (single silhouette coefficient su p,
@@ -102,11 +102,9 @@ public class Utils {
 		 * (stiamo ovviamente usando la definizione teorica sulle slide)
 		 */
 		
-		// Init per la media dei singoli silhouette
-		double somma = 0;
 		
 		// Init per determinare le partizioni degli input
-		int k = input_clusters.k();
+		int k = centri.length;
 		
 		/*
 		 * PRE-INIT PHASE:
@@ -119,7 +117,7 @@ public class Utils {
 		double weights[] = new double[k];
 
 		for(int j=0; j<k; j++)
-			weights[j] = 100000;
+			weights[j] = 100000; //Non cambia assolutamente niente, l'ho messo a caso
 
 		// Ancora inizializzazioni...
 		JavaRDD<Position> in_cluster[] = in_pos.randomSplit(weights);
@@ -137,15 +135,18 @@ public class Utils {
 		 */
 		for(i=0; i<k; i++) {
 			in_cluster[i] = in_pos
-					.filter((p) -> (input_clusters.predict(p.toVector())==i))
-					.cache(); // Se non lo metto, in_cluster risulta vuoto una volto uscito dal ciclo. PERCHE?!
+					.filter((p) -> (predict(centri, p)==i))
+					.cache(); // Se non lo faccio, in_cluster risulta vuoto una volto uscito dal ciclo. PERCHE?!
 			non_in_cluster[i] = in_pos.subtract(in_cluster[i]);
 			in_cluster_length[i] = in_cluster[i].count();
 		}
+
+		// Init per la media dei singoli silhouette
+		double somma = 0;
 		
 		for (Position p : in_pos.collect()) {
 			// Catturo l'indice del cluster al quale appartiene p
-			int p_index = input_clusters.predict(p.toVector());
+			int p_index = predict(centri, p);
 
 			/*
 			 * --- CALCOLO DEL PARAMETRO bp ---
@@ -161,7 +162,7 @@ public class Utils {
 			JavaPairRDD<Integer, Double> index_sum_dist = non_in_cluster[p_index]
 					.mapToPair((j) -> {
 						// .predict() ritorna l'indice del cluster al quale appartiene il punto in input
-						int i = input_clusters.predict(j.toVector());
+						int i = predict(centri, j);
 						
 						// Ritorno la tupla (INDICE, DISTANZA DEI PUNTI DA P)
 						return new Tuple2<Integer, Double>(i, Position.distance(j, p));
@@ -231,88 +232,27 @@ public class Utils {
 	}
 	
 	/**
-	 * Dato un punto p, restituisce il coefficiente b, relativo a silhouette
-	 * (ha bisogno anche del dataset e del clustering stesso)
+	 * Dato un punto del dataset, ritorna l'indice del centro più vicino.
+	 * [Fa la stessa cosa di KMeansModel.predcit(p)]
+	 * Non uso partition perche' ho necessita' di snellire questa operazione il piu' possibile
 	 * 
-	 * @param p: punto sul quale si sta effettuando il calcolo di b
-	 * @param in_clusters: KMeans model gia' trainato
-	 * @param in_pos: dataset di punti
+	 * @param il vettore di centri ritornato dal clustering
+	 * @param il punto da associare ad un certo cluster (e quindi centro)
 	 */
-	private static double computeB (Position p, KMeansModel in_clusters, JavaRDD<Position> in_pos) {
-		// Il seguente dataset contiene solo punti che NON appartengono al cluster di p
-		final int p_index = in_clusters.predict(p.toVector());
-		JavaRDD<Position> punti_non_in_p = in_pos
-				.filter((j) -> (in_clusters.predict(j.toVector()) != p_index));
+	private static int predict (Position centri[], Position punto) {
 		
-		/*
-		 * PAIR Map phase: calcolo la distanza (j,p) dove j e' un punto del dataset
-		 * appartenente a qualsiasi cluster tranne quello del punto p (ecco perche' ho filtrato).
-		 * Chiave: intero che rappresenta l'indice del cluster del punto j;
-		 * Valore: Proprio la distanza(p,j)
-		 * 
-		 * Reduce BY-KEY phase: sommo le distanze appartenenti alla stessa chiave ("BY-KEY").
-		 */
-		
-		JavaPairRDD<Integer, Double> index_sum_dist = punti_non_in_p
-				.mapToPair((j) -> {
-					// .predict() ritorna l'indice del cluster al quale appartiene il punto in input
-					int i = in_clusters.predict(j.toVector());
-					
-					// Ritorno la tupla (INDICE, DISTANZA DEI PUNTI DA P)
-					return new Tuple2<Integer, Double>(i, Position.distance(j, p));
-					})
-				.reduceByKey((a, b) -> a+b);
-		
-		// Estraggo i risultati
-		List<Tuple2<Integer, Double>> min_lista = index_sum_dist.collect();
-		
-		// Ricerca di minimo tra tutti i cluster
-		double min = min_lista.get(0)._2();
-		int argmin = min_lista.get(0)._1(); // Mi ricordo anche di quale cluster sto parlando
-		
-		for(Tuple2<Integer, Double> t : min_lista) {
-			if (t._2() < min) {
-				min = t._2();
-				argmin = t._1();
-			}
-		}
-		
-		final int min_cluster_index = argmin;
-		
-		// Calcolo della cardinalita' del cluster a somma minima
-		long cluster_length = punti_non_in_p
-				.filter((j) -> (in_clusters.predict(j.toVector()) == min_cluster_index))
-				.count();
-
-		// Restituisco bp
-		if (cluster_length==0)
-			return 0.0;
-		else
-			return min/cluster_length;
+		double min = Position.distance(punto, centri[0]);
+        int best = 0;
+        
+        for (int i = 1; i < centri.length; i++) {
+            double distance =  Position.distance(punto, centri[i]);
+            if (distance < min) {
+                min = distance;
+                best = i;
+            }
+        }
+		return best;
 	}
-	
-	/**
-	 * Dato un punto p, restituisce il coefficiente a, relativo a silhouette
-	 * (ha bisogno anche del dataset e del clustering stesso)
-	 * 
-	 * @param p: punto sul quale si sta effettuando il calcolo di a
-	 * @param in_clusters: KMeans model gia' trainato
-	 * @param in_pos: dataset di punti
-	 */
-	private static double computeA (Position p, KMeansModel in_clusters, JavaRDD<Position> in_pos) {
-		// Il seguente dataset contiene solo i punti che stanno nello stesso cluster di p
-		final int p_index = in_clusters.predict(p.toVector());
-		JavaRDD<Position> punti_in_p = in_pos.filter((j) -> (in_clusters.predict(j.toVector()) == p_index));
-
-		Double somma_distanze= punti_in_p
-				.map((j) -> Position.distance(j, p)) // Map phase: Per ogni punto j che appartiene al cluster di P, calcolo la distanza
-				.reduce((a,b) -> a+b); 				// Reduce phase: Eseguo la somma di tutte le distanze sopra ottenute
-		
-		// Restituisco ap
-		//System.out.println("Il cluster " + p_index + " ha " + punti_in_p.count() + " elementi");
-		return somma_distanze / punti_in_p.count();
-	}
-	
 	/**
 	 * E' una metrica di valutazione dei cluster ottenuti dai KMeans:
 	 * restituisce due utili indici di variabilità dei cluster.
@@ -347,7 +287,7 @@ public class Utils {
 			int i = in_clusters.predict(p.toVector());
 			
 			// Creo la tupla (indice, distanza dal centro)
-			return new Tuple2<Integer, Double>(i, Position.distance(p, new Position(centers[i])));
+			return new Tuple2<Integer, Double>(i, Position.distance(p, Utils.toPosition(centers[i])));
 		}).reduceByKey((i, j) -> Double.max(i, j));
 		
 		/*
@@ -385,4 +325,17 @@ public class Utils {
 		return new Tuple2<Double, Double>(media, devstand);
 		
 	}
+	
+	/**
+	 * Dato un generico vettore (coppia di numeri, quindi bidimensionale), lo trasforma in una classe Position
+	 * 
+	 * @param v: il vettore in formato (LAT, LONG) da trasformare in un Position
+	 * @return p: position in formato (LAT, LONG)
+	 */
+	
+	public static Position toPosition(Vector v) {
+		// ATTENZIONE all'ordine, qui!!
+		return new Position (v.apply(0), v.apply(1));
+	}
+	
 }

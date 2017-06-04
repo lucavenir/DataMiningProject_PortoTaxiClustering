@@ -172,9 +172,16 @@ public class Main {
          */              
         
         //modificare i parametri 2, 3, 4 e 6 per eseguire diversamente
-        runAllIncreasingK(positions, 63, 63, 1, true, ALG_CLARAFAST);
+        Position[][][] centers = runAllIncreasingK(positions, 4, 6, 1, true, ALG_PAM | ALG_CLARA | ALG_CLARANS | ALG_CLARAFAST | ALG_KMEANS);
         
-                
+        System.out.println("calculating PAM's silhouette coefficient on 0.5% sample (just a demo) (the first one that was executed, k=4)...");
+        double s = Utils.silhouetteCoefficient(centers[0][0], positions.sample(false, 0.005).cache());
+        System.out.println("silhouette coefficient = "+s);
+        
+        System.out.println("calculating Hopkins statistics on 0.5% sample (just a demo)...");
+        double h = Utils.hopkinsStatistic(positions.sample(false, 0.005).cache());
+        System.out.print("Hopkins statistics = "+h);
+        
         
         // Chiudi Spark
         ss.close();
@@ -213,12 +220,12 @@ public class Main {
         
         for (int k = minK; k <= maxK; k+=kStep)
         {
-        	Kmedian a = new Kmedian(positions);
-        	KMeansModel kmeansClusters= null;
-        	Position[] centers = null;
 	        //String[] resultK = new String[11];
 	        for (int j = 0; j < 5; j++)
 	        {
+	        	Kmedian a = new Kmedian(positions);
+        		KMeansModel kmeansClusters= null;
+	        	Position[] centers = null;
 		        long t0 = System.nanoTime();
 		        long t1 = System.nanoTime()-1000_000;
 		        double objFnc = 0;
@@ -289,14 +296,16 @@ public class Main {
 		            	throw new RuntimeException("invalid alg");
 		        }
 		        
+		        long time_ms = (t1-t0)/1000_000;
 		        if(centers!=null)//se è stato eseguito
+		        {
 		        	objFnc = a.objectiveFunction(centers);
+		        	System.out.println("Objective Function: " + objFnc);
+		        	System.out.println("clustering completed (" + time_ms +" ms)");
+		        }
 		        else
 		        	objFnc = -1;
-				System.out.println("Objective Function: " + objFnc);
-		        long time_ms = (t1-t0)/1000_000;
 		        
-		        System.out.println("clustering completed (" + time_ms +" ms)");
 		       // resultK[alg * 2] = "" +  objFnc;
 		       // resultK[alg * 2 + 1] = "" + time_ms;
 		        
