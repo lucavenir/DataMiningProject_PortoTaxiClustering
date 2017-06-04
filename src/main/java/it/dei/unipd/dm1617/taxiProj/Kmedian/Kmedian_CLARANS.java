@@ -79,9 +79,9 @@ public class Kmedian_CLARANS {
      * @return Array di k centri
      */
     private static Position[] iter_clarans(Iterable<Position> list, int k, int nlocal, int nneighbor) {
-	Iterator<Position1> iter = list.iterator();
+	Iterator<Position> iter = list.iterator();
     	// Creo lista per estrazione casuale
-        ArrayList<Position1> randomList = new ArrayList();
+        ArrayList<Position> randomList = new ArrayList<Position>();
         int size = 0;
         while(iter.hasNext()){
             randomList.add(iter.next());
