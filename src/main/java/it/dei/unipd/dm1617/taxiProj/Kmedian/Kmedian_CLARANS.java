@@ -2,6 +2,7 @@ package it.dei.unipd.dm1617.taxiProj.Kmedian;
 
 import it.dei.unipd.dm1617.taxiProj.Position;
 import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.spark.api.java.JavaPairRDD;
 import scala.Tuple2;
