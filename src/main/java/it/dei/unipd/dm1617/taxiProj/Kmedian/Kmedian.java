@@ -417,46 +417,33 @@ public class Kmedian {
      * @return La funzione obbiettivo di ciascun reducer
      */
     private Double[] parallelObjectiveFunction(Position[][] centers, int l) {   
+    	
+    	//questo verrà usato come valore zero quando spark fa le somme
         Double[] initialEntry = new Double[l];
         for(Double entry: initialEntry){
             entry = Double.valueOf(0);
         };
-        return dataset.aggregate(initialEntry, 
-            (tempD, point)->{
-                for (int ireducer = 0; ireducer < l; ireducer++) {
-                double min = Position.distance(point, centers[ireducer][0]);
-                for (int ik = 1; ik < centers[ireducer].length; ik++) {
-                    double distance = Position.distance(point, centers[ireducer][ik]);
-                    if (distance < min) {
-                        min = distance;
+                
+        return  dataset.aggregate(initialEntry, 
+                (tempD, point)->{//per ogni clustering (=reducer) trova per ogni punto la distanza minima da un centro
+                    for (int ireducer = 0; ireducer < l; ireducer++) {//per ogni reducer
+    	                double min = Position.distance(point, centers[ireducer][0]);//distanza dal primo centro
+    	                for (int ik = 1; ik < centers[ireducer].length; ik++) {//per ogni centro
+    	                    double distance = Position.distance(point, centers[ireducer][ik]);//calcola la distanza dal punto
+    	                    if (distance < min) {//se è il minimo finora in quest reducer, segnatelo
+    	                        min = distance;
+    	                    }
+    	                }
+    	                tempD[ireducer] = min;
                     }
-                }
-                tempD[ireducer] = min;
-            }
-            return tempD;   
-        }, (phi1, phi2) -> {
-                //al primo giro c'è un confronto con una lista vuota   
-                boolean n1 = (phi1[0] == null);
-                boolean n2 = (phi2[0] == null);
-
-                if (n1 && !n2) {
-                    return phi2;
-                } else if (!n1 && n2) {
-                    return phi1;
-                } else if (n1 && n2) {
-                    // azzera una delle due liste perché entrambe vuote (non dovrebbe mai capitare
-                    for (Double e : phi1) {
-                         e = Double.valueOf(0);
+                    return tempD;//tempD ora contiene la distanza dal punto al suo centro (ossia il costo del punto) per ogni clustering
+            }, (phi1, phi2) -> {//somme le array ottenute dall'altra funzione, quindi per ogni clustering somma tutti i costi dei punti
+                    for (int i = 0; i < phi1.length; i++) {
+                         phi1[i] += phi2[i];
                     }
                     return phi1;
-                }
-
-                // se tutto ok invece somma
-                for (int i = 0; i < phi1.length; i++) {
-                     phi1[i] += phi2[i];
-                }
-                return phi1;
         });
+        
         /*
         utilizzo versione con aggregate perché è migliore ma tengo questa per rollback
         */

@@ -82,7 +82,7 @@ public class Kmedian_CLARANS {
      * @return Array di k centri
      */
     private static Position[] iter_clarans(Iterable<Position> list, int k, int nlocal, int nneighbor) {
-	Iterator<Position> iter = list.iterator();
+    	Iterator<Position> iter = list.iterator();
     	// Creo lista per estrazione casuale
         ArrayList<Position> randomList = new ArrayList<Position>();
         int size = 0;
@@ -135,14 +135,14 @@ public class Kmedian_CLARANS {
             indexLocal = 0;
             indexK = 0;
 
-            // per migliorare la scelta del vicino preso in considerazione cerco i due centri più vicini
+            //all'interno del clustering già fatto cerco i due centri più vicini, ipostizzando che siano sbagliati
             // suppongo che abbiano più probabilità di essere all' interno dello stesso cluster naturale e che uno sia da cambiare
             int copy1 = -1;
             int copy2 = -1;
             double distanceCopy = Double.MAX_VALUE;
             for (int i = 0; i < k; i++) {
                 for (int i2 = i + 1; i2 < k; i2++) {
-                    double distance = Position.distance(medoids[0][i], medoids[0][i2]);
+                    double distance = Position.distance(medoids[0][i], medoids[0][i2]);// usa lo zero perchè poi per inidici successivi copy1 e copy2 vengono aggiornati più avanti
                     if (distance < distanceCopy) {
                         distanceCopy = distance;
                         copy1 = i;

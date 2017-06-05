@@ -172,7 +172,7 @@ public class Main {
          */              
         
         //modificare i parametri 2, 3, 4 e 6 per eseguire diversamente
-        Position[][][] centers = runAllIncreasingK(positions, 4, 6, 1, true, ALG_PAM | ALG_CLARA | ALG_CLARANS | ALG_CLARAFAST | ALG_KMEANS);
+        Position[][][] centers = runAllIncreasingK(positions, 4, 6, 1, true,/* ALG_PAM |*/ ALG_CLARA /*| ALG_CLARANS | ALG_CLARAFAST | ALG_KMEANS*/);
         
         System.out.println("calculating PAM's silhouette coefficient on 0.5% sample (just a demo) (the first one that was executed, k=4)...");
         double s = Utils.silhouetteCoefficient(centers[0][0], positions.sample(false, 0.005).cache());

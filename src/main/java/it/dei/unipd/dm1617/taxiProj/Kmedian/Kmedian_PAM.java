@@ -18,9 +18,10 @@ public class Kmedian_PAM {
 	 */
     public static Position[][] parallelPAM(JavaPairRDD<Integer, Position> dataset, final int k, int l) {
     	// raggruppa il dataset per reducer e mappa l'intera partizione nei suoi centri
-        List<Tuple2<Integer, Position[]>> lCenters = dataset.groupByKey().mapToPair((partition) -> {
-            return new Tuple2<Integer, Position[]>(partition._1(), iter_pam(partition._2(), k));
-        }).collect();
+        List<Tuple2<Integer, Position[]>> lCenters = dataset.groupByKey()//trasforma il dataset unendo in un unico iterable i valori corrispondenti a uana stessa chiave
+        		.mapToPair((partition) -> {
+        			return new Tuple2<Integer, Position[]>(partition._1(), iter_pam(partition._2(), k));
+        		}).collect();
 
         // converti i centri trovati in array e ritorna
         Position[][] toReturn = new Position[l][k];
@@ -57,7 +58,7 @@ public class Kmedian_PAM {
         // calcolo della funzione obbiettivo dei centri attuali
         double currentPhi = objectiveFunction(dataset.iterator(), medoids);
         
-        // copio gli elementi i medoidi iniziali su un nuovo array
+        // copio gli i medoidi iniziali su un nuovo array
         Position[] newMedoids = new Position[k];
         System.arraycopy(medoids, 0, newMedoids, 0, k);
 
@@ -73,10 +74,10 @@ public class Kmedian_PAM {
             Position toReplace = null;
 		
             while (iter.hasNext() && stop) {
-            	// verifico che prendo in considarazione solo candidati centri diversi dagli attuali
                 Position p = iter.next();
+            	// verifico che questo punto non sia già un centro
                 boolean equal = false;
-                for (int i = 0; i < medoids.length && !equal; i++) {
+                for (int i = 0; i < k && !equal; i++) {//confronto con tutti i centri
                     if (Position.compare(p, medoids[i])) {
                         equal = true;
                     }
