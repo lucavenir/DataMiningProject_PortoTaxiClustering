@@ -151,6 +151,7 @@ public class Kmedian_CLARANS {
                 }
             }
 		
+            //doppio ciclo con indexLocal che cresce e per ogni indexLocal incrementa indexK
             while (indexLocal < nlocal) {
             	// prendo il prossimo elemento della lista
                 Position candidate = randomList.get( (int) (Math.random()*size));
@@ -221,6 +222,7 @@ public class Kmedian_CLARANS {
                     int best = -1;
 
                     // cerco il vicino con funzione obbiettivo migliore 
+                    //cerco lo scambio migliore all'interno di questa ricerca locale
                     for (int i2 = 0; i2 < nneighbor; i2++) {
                         //System.out.println("for");
                         if (phi[i][i2] < min) {
@@ -232,9 +234,9 @@ public class Kmedian_CLARANS {
 
                     // se è minore rispetto all'attuale per la ricerca locale i-sima
                     if (found_min) {
-                    	// aggiorno i medoidi della ricarca locale
-                        initialPhi[i] = min;
-                        medoids[i][neighborIndex[i][best]] = neighbor[i][best];
+                    	// aggiorno i medoidi della ricerca locale
+                        medoids[i][neighborIndex[i][best]] = neighbor[i][best];//scambia il centro con il vicino scelto
+                        initialPhi[i] = min;//aggiorna la funzione obbiettivo
                     } else {
                     	// la ricerca i-sima è finita, verifico se è migliore dell'attuale best
                         if (initialPhi[i] < bestPhi) {
@@ -315,7 +317,7 @@ public class Kmedian_CLARANS {
      * @param k n# clusters voluti
      * @param nlocal n# riceche locali di CLARANS
      * @param nneighbor n# di vicini esplorati da CLARANS
-     * @return Array contenente il risultato della funzione obbiettivo di ogni ricerca locale
+     * @return Array contenente il risultato della funzione obbiettivo di ogni ricerca locale (per ogni scambio)
      */
     private static double[][] objectiveFunctionNeighbor(Iterator<Position> iter, Position[][] medoids, Position[][] neighbor, int[][] neighborIndex, int k, int nlocal, int nneighbor) {
         double[][] phi = new double[nlocal][nneighbor];
@@ -326,16 +328,16 @@ public class Kmedian_CLARANS {
             	//per ogni elemento sommo alla funzione obbiettivo la distanza tra l'elemento e il centro più vicino
                 double min = Double.MAX_VALUE;
                 double second_min = Double.MAX_VALUE;
-                int best = -1;
+                int ilCentroDiP = -1;//centro più vicino a p
 
                 //centro più vicino tra quelli vecchi in medoids
                 for (int y = 0; y < k; y++) {
                     double distance = Position.distance(p, medoids[x][y]);
                     if (distance < min) {
-                        second_min = min;
+                        second_min = min;//segna il minimo precedente come second_min
                         min = distance;
-                        best = y;
-                    } else if (distance < second_min) {
+                        ilCentroDiP = y;
+                    } else if (distance < second_min) {//quando trova qualcosa tra min e second_min lo segna come second_min
                         second_min = distance;
                     }
                 }
@@ -343,7 +345,7 @@ public class Kmedian_CLARANS {
                 //centro più vicino nel neghbor (confronto con quello precendentemente trovato)
                 for (int y = 0; y < nneighbor; y++) {
                     double distance = Position.distance(p, neighbor[x][y]);
-                    if (neighborIndex[x][y] == best) { // ﾃｨ quello sostituito
+                    if (neighborIndex[x][y] == ilCentroDiP) { // ﾃｨ quello sostituito
                         //sostituisci best
                         distance = (distance < second_min) ? distance : second_min;
                     } else {

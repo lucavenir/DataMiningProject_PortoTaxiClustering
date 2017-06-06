@@ -420,12 +420,12 @@ public class Kmedian {
     	
     	//questo verrà usato come valore zero quando spark fa le somme
         Double[] initialEntry = new Double[l];
-        for(Double entry: initialEntry){
-            entry = Double.valueOf(0);
-        };
+        for(int i = 0; i<initialEntry.length ; i++){
+            initialEntry[i] = Double.valueOf(0);
+        }
                 
         return  dataset.aggregate(initialEntry, 
-                (tempD, point)->{//per ogni clustering (=reducer) trova per ogni punto la distanza minima da un centro
+                (tempD, point)->{//per ogni clustering (=reducer) trova per ogni punto la distanza minima dal suo centro
                     for (int ireducer = 0; ireducer < l; ireducer++) {//per ogni reducer
     	                double min = Position.distance(point, centers[ireducer][0]);//distanza dal primo centro
     	                for (int ik = 1; ik < centers[ireducer].length; ik++) {//per ogni centro
